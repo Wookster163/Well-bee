@@ -1,7 +1,7 @@
-// VitaLog Service Worker — v3.0
+// Well-bee Service Worker — v3.0
 // Caches app shell for full offline support
 
-const CACHE_NAME = 'vitalog-v3';
+const CACHE_NAME = 'wellbee-v1';
 
 // Resources to pre-cache on install
 const PRECACHE_URLS = [

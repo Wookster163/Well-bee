@@ -6,13 +6,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="VitaLog">
+<meta name="apple-mobile-web-app-title" content="Well-bee">
 <meta name="theme-color" content="#0d1117">
-<meta name="description" content="Personal health, supplement & cycle tracker with correlation analysis">
 <link rel="manifest" href="manifest.json">
-<!-- Apple touch icons (fallback for iOS) -->
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<title>VitaLog v3</title>
+<title>Well-bee</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -277,37 +275,61 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;hei
 @media(max-width:900px){.grid-4{grid-template-columns:1fr 1fr;}.grid-3{grid-template-columns:1fr 1fr;}.grid-2{grid-template-columns:1fr;}.form-row,.form-row-3{grid-template-columns:1fr;}}
 @media(max-width:640px){.sidebar{display:none;}.content{padding:12px;}.topbar{padding:10px 14px;}}
 
-/* PWA safe area insets for notched phones */
-.topbar{padding-top:max(16px, env(safe-area-inset-top));}
-.sidebar{padding-top:env(safe-area-inset-top);}
-body{padding-bottom:env(safe-area-inset-bottom);}
-
-/* Install banner */
-#installBanner{
-  position:fixed;bottom:0;left:0;right:0;
-  background:var(--surface);
-  border-top:1px solid var(--border);
-  padding:14px 20px max(14px,env(safe-area-inset-bottom)) 20px;
-  display:flex;align-items:center;gap:14px;
-  z-index:200;transform:translateY(100%);
-  transition:transform .35s cubic-bezier(.4,0,.2,1);
-  box-shadow:0 -8px 32px rgba(0,0,0,.4);
+/* ═══════════════════ MOBILE NAV SYSTEM ════════════════════ */
+@media(max-width:700px){
+  .sidebar{display:none!important;}
+  .content{padding:10px 10px 84px!important;}
+  .topbar{padding:10px 12px!important;}
+  .page-sub{display:none;}
 }
-#installBanner.visible{transform:translateY(0);}
-#installBanner .install-icon{font-size:32px;flex-shrink:0;}
-#installBanner .install-text{flex:1;}
-#installBanner .install-title{font-weight:600;font-size:14px;margin-bottom:2px;}
-#installBanner .install-sub{font-size:12px;color:var(--text-muted);}
-#installBanner .install-actions{display:flex;gap:8px;flex-shrink:0;}
-
-/* Offline indicator */
-#offlineBar{
-  position:fixed;top:0;left:0;right:0;
-  background:#f0c44a;color:#0d1117;
-  text-align:center;font-size:12px;font-weight:600;
-  padding:6px;z-index:300;
-  display:none;
+#menuBtn{
+  display:none;width:38px;height:38px;border-radius:8px;
+  background:var(--surface2);border:1px solid var(--border);
+  color:var(--text);font-size:20px;cursor:pointer;
+  align-items:center;justify-content:center;flex-shrink:0;
 }
+@media(max-width:700px){#menuBtn{display:flex;}}
+#navBackdrop{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.65);z-index:500;
+}
+#navBackdrop.show{display:block;}
+#navDrawer{
+  position:fixed;top:0;left:0;width:270px;height:100%;
+  background:var(--surface);border-right:1px solid var(--border);
+  z-index:510;transform:translateX(-100%);
+  transition:transform .27s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;overflow-y:auto;
+}
+#navDrawer.show{transform:translateX(0);}
+.nd-head{padding:20px 16px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.nd-logo{font-family:"DM Serif Display",serif;font-size:22px;color:var(--accent4);}
+.nd-close{background:none;border:none;color:var(--text-muted);font-size:22px;cursor:pointer;}
+.nd-streak{background:rgba(240,196,74,.1);border:1px solid rgba(240,196,74,.2);border-radius:8px;padding:8px 10px;margin:10px;text-align:center;}
+.nd-streak-num{font-family:"DM Mono",monospace;font-size:20px;color:var(--accent4);}
+.nd-streak-lbl{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;}
+.nd-section{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1.4px;padding:10px 12px 3px;}
+.nd-item{display:flex;align-items:center;gap:10px;padding:12px;border-radius:8px;margin:1px 6px;cursor:pointer;font-size:14px;font-weight:500;color:var(--text-muted);border:none;background:none;text-align:left;width:calc(100% - 12px);transition:all .12s;}
+.nd-item:hover,.nd-item.active{background:rgba(240,196,74,.1);color:var(--accent4);}
+.nd-item .ni{font-size:17px;width:22px;text-align:center;}
+#bottomTabs{
+  display:none;position:fixed;bottom:0;left:0;right:0;
+  background:var(--surface);border-top:1px solid var(--border);
+  z-index:400;padding:6px 0 max(8px,env(safe-area-inset-bottom)) 0;
+}
+@media(max-width:700px){#bottomTabs{display:flex;}}
+.btab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;border:none;background:none;color:var(--text-muted);cursor:pointer;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;padding:3px 0;transition:color .12s;}
+.btab .bi{font-size:21px;line-height:1;}
+.btab.on{color:var(--accent4);}
+#offlineBanner{display:none;position:fixed;top:0;left:0;right:0;background:var(--warn);color:#0d1117;font-size:12px;font-weight:600;text-align:center;padding:6px;z-index:600;}
+#installBanner{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:14px 18px max(14px,env(safe-area-inset-bottom)) 18px;display:flex;align-items:center;gap:12px;z-index:450;transform:translateY(100%);transition:transform .3s ease;box-shadow:0 -6px 24px rgba(0,0,0,.4);}
+#installBanner.show{transform:translateY(0);}
+#installBanner .ib-icon{font-size:30px;}
+#installBanner .ib-text{flex:1;}
+#installBanner .ib-title{font-weight:600;font-size:14px;margin-bottom:2px;}
+#installBanner .ib-sub{font-size:11px;color:var(--text-muted);}
+#installBanner .ib-btns{display:flex;gap:7px;flex-shrink:0;}
+
 </style>
 </head>
 <body>
@@ -316,8 +338,8 @@ body{padding-bottom:env(safe-area-inset-bottom);}
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="logo">
-    <div class="logo-title">VitaLog</div>
-    <div class="logo-sub">Health Intelligence</div>
+    <div class="logo-title">🐝 Well-bee</div>
+    <div class="logo-sub">Your health companion</div>
     <div class="logo-version">v3.0</div>
   </div>
   <div class="streak-badge">
@@ -348,9 +370,12 @@ body{padding-bottom:env(safe-area-inset-bottom);}
 <!-- MAIN -->
 <main class="main">
   <div class="topbar">
-    <div>
-      <div class="page-title" id="pageTitle">Dashboard</div>
-      <div class="page-sub" id="pageSub">Your health snapshot at a glance</div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button id="menuBtn" onclick="openNav()">☰</button>
+      <div>
+        <div class="page-title" id="pageTitle">Dashboard</div>
+        <div class="page-sub" id="pageSub">Your health snapshot at a glance</div>
+      </div>
     </div>
     <div class="topbar-right">
       <div class="date-nav">
@@ -867,85 +892,7 @@ body{padding-bottom:env(safe-area-inset-bottom);}
   </div>
 </div>
 
-<!-- Offline bar -->
-<div id="offlineBar">📵 You're offline — VitaLog still works, your data is saved locally</div>
-
-<!-- PWA Install Banner -->
-<div id="installBanner">
-  <div class="install-icon">💊</div>
-  <div class="install-text">
-    <div class="install-title">Install VitaLog</div>
-    <div class="install-sub">Add to home screen for the full app experience — works offline</div>
-  </div>
-  <div class="install-actions">
-    <button class="btn btn-ghost btn-sm" onclick="dismissInstall()">Later</button>
-    <button class="btn btn-primary btn-sm" onclick="triggerInstall()">Install</button>
-  </div>
-</div>
-
 <div id="toast"></div>
-
-<script>
-// =============================================================
-// SERVICE WORKER REGISTRATION
-// =============================================================
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js')
-      .then(reg => console.log('SW registered:', reg.scope))
-      .catch(err => console.log('SW registration failed:', err));
-  });
-}
-
-// =============================================================
-// PWA INSTALL PROMPT
-// =============================================================
-let deferredInstallPrompt = null;
-const installBanner = document.getElementById('installBanner');
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredInstallPrompt = e;
-  // Only show if user hasn't dismissed before
-  if (!localStorage.getItem('pwa_install_dismissed')) {
-    setTimeout(() => installBanner.classList.add('visible'), 2000);
-  }
-});
-
-function triggerInstall() {
-  if (!deferredInstallPrompt) return;
-  deferredInstallPrompt.prompt();
-  deferredInstallPrompt.userChoice.then(choice => {
-    if (choice.outcome === 'accepted') {
-      showToast('VitaLog installed! 🎉');
-    }
-    deferredInstallPrompt = null;
-    installBanner.classList.remove('visible');
-  });
-}
-
-function dismissInstall() {
-  installBanner.classList.remove('visible');
-  localStorage.setItem('pwa_install_dismissed', '1');
-}
-
-// Hide banner once app is installed
-window.addEventListener('appinstalled', () => {
-  installBanner.classList.remove('visible');
-  showToast('VitaLog installed successfully! 🎉');
-});
-
-// =============================================================
-// OFFLINE DETECTION
-// =============================================================
-const offlineBar = document.getElementById('offlineBar');
-function updateOnlineStatus() {
-  offlineBar.style.display = navigator.onLine ? 'none' : 'block';
-}
-window.addEventListener('online', updateOnlineStatus);
-window.addEventListener('offline', updateOnlineStatus);
-updateOnlineStatus();
-</script>
 
 <script>
 // =============================================================
@@ -1978,6 +1925,90 @@ function init(){
   document.getElementById('cycleDate').value=dateStr();document.getElementById('nutritionDate').value=dateStr();
 }
 init();
+</script>
+
+<div id="offlineBanner">📵 Offline — your data is still safe</div>
+<div id="navBackdrop" onclick="closeNav()"></div>
+<div id="navDrawer">
+  <div class="nd-head">
+    <span class="nd-logo">🐝 Well-bee</span>
+    <button class="nd-close" onclick="closeNav()">✕</button>
+  </div>
+  <div class="nd-streak">
+    <div class="nd-streak-num" id="drawerStreak">0</div>
+    <div class="nd-streak-lbl">🔥 Day Streak</div>
+  </div>
+  <nav style="padding:6px;">
+    <div class="nd-section">Overview</div>
+    <button class="nd-item active" data-page="dashboard" onclick="goTo('dashboard')"><span class="ni">⬡</span>Dashboard</button>
+    <button class="nd-item" data-page="log" onclick="goTo('log')"><span class="ni">＋</span>Log Entry</button>
+    <div class="nd-section">Tracking</div>
+    <button class="nd-item" data-page="substances" onclick="goTo('substances')"><span class="ni">💊</span>Substances</button>
+    <button class="nd-item" data-page="history" onclick="goTo('history')"><span class="ni">📋</span>Intake History</button>
+    <button class="nd-item" data-page="health" onclick="goTo('health')"><span class="ni">🩺</span>Health Logs</button>
+    <button class="nd-item" data-page="cycle" onclick="goTo('cycle')"><span class="ni">🌸</span>Cycle Tracker</button>
+    <button class="nd-item" data-page="nutrition" onclick="goTo('nutrition')"><span class="ni">🥗</span>Nutrition</button>
+    <div class="nd-section">Analysis</div>
+    <button class="nd-item" data-page="charts" onclick="goTo('charts')"><span class="ni">📈</span>Charts</button>
+    <button class="nd-item" data-page="correlations" onclick="goTo('correlations')"><span class="ni">🔗</span>Correlations</button>
+    <button class="nd-item" data-page="delayed" onclick="goTo('delayed')"><span class="ni">⏱</span>Delayed Effects</button>
+    <button class="nd-item" data-page="insights" onclick="goTo('insights')"><span class="ni">✦</span>AI Insights</button>
+    <div class="nd-section">System</div>
+    <button class="nd-item" data-page="settings" onclick="goTo('settings')"><span class="ni">⚙</span>Settings</button>
+  </nav>
+</div>
+<nav id="bottomTabs">
+  <button class="btab on" data-page="dashboard" onclick="goTo('dashboard')"><span class="bi">⬡</span>Home</button>
+  <button class="btab" data-page="log" onclick="goTo('log')"><span class="bi">＋</span>Log</button>
+  <button class="btab" data-page="cycle" onclick="goTo('cycle')"><span class="bi">🌸</span>Cycle</button>
+  <button class="btab" data-page="nutrition" onclick="goTo('nutrition')"><span class="bi">🥗</span>Food</button>
+  <button class="btab" onclick="openNav()"><span class="bi">☰</span>More</button>
+</nav>
+<div id="installBanner">
+  <div class="ib-icon">🐝</div>
+  <div class="ib-text">
+    <div class="ib-title">Install Well-bee</div>
+    <div class="ib-sub">Add to home screen — works offline</div>
+  </div>
+  <div class="ib-btns">
+    <button class="btn btn-ghost btn-sm" onclick="dismissInstall()">Later</button>
+    <button class="btn btn-primary btn-sm" onclick="doInstall()">Install</button>
+  </div>
+</div>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+function openNav(){
+  document.getElementById('navDrawer').classList.add('show');
+  document.getElementById('navBackdrop').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+function closeNav(){
+  document.getElementById('navDrawer').classList.remove('show');
+  document.getElementById('navBackdrop').classList.remove('show');
+  document.body.style.overflow='';
+}
+function goTo(id){
+  showPage(id);
+  closeNav();
+  document.querySelectorAll('.nd-item').forEach(e=>e.classList.toggle('active',e.dataset.page===id));
+  document.querySelectorAll('.btab[data-page]').forEach(e=>e.classList.toggle('on',e.dataset.page===id));
+  const ds=document.getElementById('drawerStreak'),ms=document.getElementById('streakNum');
+  if(ds&&ms)ds.textContent=ms.textContent;
+}
+const ob=document.getElementById('offlineBanner');
+function chkOnline(){ob.style.display=navigator.onLine?'none':'block';}
+window.addEventListener('online',chkOnline);window.addEventListener('offline',chkOnline);chkOnline();
+let _pwaEvt=null;
+const ib=document.getElementById('installBanner');
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();_pwaEvt=e;
+  if(!localStorage.getItem('wb_dismiss'))setTimeout(()=>ib.classList.add('show'),3500);
+});
+function doInstall(){if(!_pwaEvt)return;_pwaEvt.prompt();_pwaEvt.userChoice.then(()=>{ib.classList.remove('show');_pwaEvt=null;});}
+function dismissInstall(){ib.classList.remove('show');localStorage.setItem('wb_dismiss','1');}
+window.addEventListener('appinstalled',()=>{ib.classList.remove('show');showToast('Well-bee installed! 🐝');});
 </script>
 </body>
 </html>
