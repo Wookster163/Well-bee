@@ -1,31 +1,68 @@
-{
-  "name": "Well-bee — Health Tracker",
-  "short_name": "Well-bee",
-  "description": "Track supplements, cycle, nutrition & health. Find correlations. Works offline.",
-  "start_url": "./index.html",
-  "scope": "./",
-  "display": "standalone",
-  "orientation": "portrait-primary",
-  "background_color": "#0d1117",
-  "theme_color": "#0d1117",
-  "lang": "en",
-  "categories": ["health", "medical", "lifestyle"],
-  "icons": [
-    { "src": "icons/icon-72.png",  "sizes": "72x72",   "type": "image/png" },
-    { "src": "icons/icon-96.png",  "sizes": "96x96",   "type": "image/png" },
-    { "src": "icons/icon-128.png", "sizes": "128x128", "type": "image/png" },
-    { "src": "icons/icon-144.png", "sizes": "144x144", "type": "image/png" },
-    { "src": "icons/icon-152.png", "sizes": "152x152", "type": "image/png" },
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icons/icon-384.png", "sizes": "384x384", "type": "image/png" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
-  ],
-  "shortcuts": [
-    {
-      "name": "Log Intake",
-      "short_name": "Log",
-      "url": "./index.html",
-      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
-    }
-  ]
-}
+// Well-bee Service Worker v2.0
+// Strategy: Network-first for HTML (always get latest), cache-first for assets
+const CACHE = 'wellbee-v7';
+
+self.addEventListener('install', e => {
+  e.waitUntil(self.skipWaiting());
+});
+
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(
+        keys.filter(k => k !== CACHE).map(k => caches.delete(k))
+      ))
+      .then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
+  const url = new URL(e.request.url);
+  const isLocal = url.origin === location.origin;
+  const isHTML = e.request.destination === 'document'
+    || url.pathname.endsWith('.html')
+    || url.pathname === '/'
+    || url.pathname.endsWith('/');
+
+  // HTML: always network-first so updates are immediately visible
+  if (isHTML && isLocal) {
+    e.respondWith(
+      fetch(e.request)
+        .then(res => {
+          if (res && res.status === 200) {
+            caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+          }
+          return res;
+        })
+        .catch(() => caches.match(e.request))
+    );
+    return;
+  }
+
+  // Local assets: cache-first, fetch in background
+  if (isLocal) {
+    e.respondWith(
+      caches.match(e.request).then(cached => {
+        const net = fetch(e.request).then(res => {
+          if (res && res.status === 200)
+            caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+          return res;
+        });
+        return cached || net;
+      })
+    );
+    return;
+  }
+
+  // CDN: network with cache fallback
+  e.respondWith(
+    fetch(e.request)
+      .then(res => {
+        if (res && res.status === 200)
+          caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+        return res;
+      })
+      .catch(() => caches.match(e.request))
+  );
+});
