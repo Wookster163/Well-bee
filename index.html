@@ -330,6 +330,97 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;hei
 #installBanner .ib-sub{font-size:11px;color:var(--text-muted);}
 #installBanner .ib-btns{display:flex;gap:7px;flex-shrink:0;}
 
+
+/* ═══════════════════ INTERACTIONS ═══════════════════════════ */
+--violet2:#9c7cf4;
+.icard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px;}
+.icard.positive{border-left:3px solid var(--accent);}
+.icard.negative{border-left:3px solid var(--bad);}
+.icard.neutral{border-left:3px solid var(--accent2);}
+.icard.warn{border-left:3px solid var(--warn);}
+
+/* Combo badge pair */
+.combo-pair{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.combo-pill{display:flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);padding:5px 10px;border-radius:20px;font-size:13px;font-weight:500;}
+.combo-plus{color:var(--text-dim);font-size:18px;font-weight:300;}
+.combo-vs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.vs-block{flex:1;min-width:80px;background:var(--surface2);border-radius:8px;padding:8px 10px;text-align:center;}
+.vs-label{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--text-muted);margin-bottom:4px;}
+.vs-val{font-family:'DM Mono',monospace;font-size:18px;font-weight:500;}
+.vs-n{font-size:10px;color:var(--text-dim);margin-top:2px;}
+.vs-delta{font-size:11px;margin-top:3px;font-weight:600;}
+
+/* Timing heatmap */
+.timing-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(42,52,68,.4);}
+.timing-row:last-child{border-bottom:none;}
+.timing-label{font-size:12px;width:120px;flex-shrink:0;color:var(--text-muted);}
+.timing-bar-wrap{flex:1;height:6px;background:var(--border);border-radius:3px;}
+.timing-bar{height:100%;border-radius:3px;}
+.timing-val{font-family:'DM Mono',monospace;font-size:12px;width:42px;text-align:right;}
+
+/* Heatmap matrix */
+.heatmap-wrap{overflow-x:auto;margin-top:8px;}
+.heatmap{border-collapse:collapse;font-size:11px;}
+.heatmap th{padding:6px 8px;color:var(--text-muted);font-weight:500;text-align:center;white-space:nowrap;}
+.heatmap td{width:52px;height:44px;text-align:center;border-radius:6px;font-family:'DM Mono',monospace;font-size:12px;font-weight:500;cursor:default;transition:opacity .15s;}
+.heatmap td:hover{opacity:.8;}
+.hm-label{text-align:left!important;white-space:nowrap;color:var(--text-muted);padding-right:10px;background:none!important;}
+
+/* User rules */
+.rule-card{background:var(--surface2);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;border:1px solid var(--border);}
+.rule-card .rule-icon{font-size:20px;flex-shrink:0;}
+.rule-card .rule-body{flex:1;}
+.rule-title{font-size:13px;font-weight:600;margin-bottom:2px;}
+.rule-desc{font-size:12px;color:var(--text-muted);line-height:1.5;}
+.rule-meta{font-size:11px;color:var(--text-dim);margin-top:4px;}
+
+/* Timing dots timeline */
+.timing-timeline{display:flex;align-items:center;gap:0;margin:10px 0;position:relative;}
+.timing-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;z-index:1;}
+.timing-line{flex:1;height:2px;background:var(--border);}
+.timing-dot-label{position:absolute;font-size:9px;color:var(--text-muted);top:16px;transform:translateX(-50%);white-space:nowrap;}
+
+
+/* ═══════════════════ CYCLE × NUTRITION ══════════════════════ */
+.phase-tag{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;}
+.phase-tag.menstrual{background:rgba(240,106,154,.15);color:#f06a9a;border:1px solid rgba(240,106,154,.3);}
+.phase-tag.follicular{background:rgba(240,196,74,.12);color:#f0c44a;border:1px solid rgba(240,196,74,.25);}
+.phase-tag.ovulation{background:rgba(74,240,196,.12);color:#4af0c4;border:1px solid rgba(74,240,196,.25);}
+.phase-tag.luteal{background:rgba(124,106,247,.12);color:#7c6af7;border:1px solid rgba(124,106,247,.25);}
+
+.cx-heatmap{border-collapse:collapse;width:100%;font-size:11px;}
+.cx-heatmap th{padding:6px 8px;color:var(--text-muted);font-weight:500;text-align:center;white-space:nowrap;font-size:10px;}
+.cx-heatmap td{padding:9px 6px;text-align:center;font-family:'DM Mono',monospace;font-size:12px;font-weight:500;border-radius:5px;cursor:default;}
+.cx-heatmap .row-label{text-align:left;color:var(--text-muted);font-size:11px;font-family:'Outfit',sans-serif;padding-right:8px;white-space:nowrap;background:none!important;}
+
+.elim-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px;}
+.elim-card.good{border-left:3px solid var(--good);}
+.elim-card.bad{border-left:3px solid var(--bad);}
+.elim-card.neutral{border-left:3px solid var(--text-dim);}
+
+.streak-vis{display:flex;gap:3px;flex-wrap:wrap;margin:10px 0;}
+.streak-dot{width:14px;height:14px;border-radius:3px;flex-shrink:0;}
+
+.cx-summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+@media(max-width:700px){.cx-summary-grid{grid-template-columns:1fr 1fr;}}
+.cx-summary-block{background:var(--surface2);border-radius:8px;padding:12px;text-align:center;border:1px solid var(--border);}
+.cx-summary-label{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--text-muted);margin-bottom:4px;}
+.cx-summary-val{font-family:'DM Mono',monospace;font-size:18px;font-weight:500;}
+.cx-summary-sub{font-size:10px;color:var(--text-dim);margin-top:2px;}
+
+.window-bar{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(42,52,68,.4);}
+.window-bar:last-child{border-bottom:none;}
+.window-label{font-size:12px;width:100px;flex-shrink:0;}
+.window-wrap{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
+.window-fill{height:100%;border-radius:4px;transition:width .5s ease;}
+.window-val{font-family:'DM Mono',monospace;font-size:12px;width:42px;text-align:right;}
+.window-n{font-size:10px;color:var(--text-dim);width:30px;text-align:right;}
+
+.confidence-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;}
+.confidence-high{background:var(--good);}
+.confidence-med{background:var(--warn);}
+.confidence-low{background:var(--bad);}
+
 </style>
 </head>
 <body>
@@ -360,6 +451,8 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;hei
     <button class="nav-item" onclick="showPage('charts')"><span class="icon">📈</span>Charts</button>
     <button class="nav-item" onclick="showPage('correlations')"><span class="icon">🔗</span>Correlations</button>
     <button class="nav-item" onclick="showPage('delayed')"><span class="icon">⏱</span>Delayed Effects</button>
+    <button class="nav-item" onclick="showPage('interactions')"><span class="icon">⚗️</span>Interactions</button>
+    <button class="nav-item" onclick="showPage('cyclenutr')"><span class="icon">🌸🥗</span>Cycle × Food</button>
     <button class="nav-item" onclick="showPage('insights')"><span class="icon">✦</span>AI Insights</button>
   </nav>
   <div class="sidebar-bottom">
@@ -792,6 +885,207 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;hei
     <div id="insightsContainer"></div>
   </div>
 
+
+  <!-- ======== INTERACTIONS ======== -->
+  <div class="page" id="page-interactions">
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchIxTab('combos')">🔬 Combination Effects</button>
+      <button class="tab" onclick="switchIxTab('timing')">⏱ Timing Analysis</button>
+      <button class="tab" onclick="switchIxTab('heatmap')">🗺 Pair Heatmap</button>
+      <button class="tab" onclick="switchIxTab('rules')">📌 My Interaction Notes</button>
+    </div>
+
+    <!-- TAB: COMBINATION EFFECTS -->
+    <div id="ixTab-combos">
+      <div class="notice notice-info" style="margin-bottom:16px">
+        <span>ⓘ</span>
+        <span>For each substance pair you've logged together, this compares your average health scores on A-only days, B-only days, A+B days, and neither days. Minimum 3 days per condition.</span>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+        <select class="form-select" id="ixMetricSelect" style="width:200px" onchange="renderCombos()">
+        </select>
+        <select class="form-select" id="ixSubA" style="width:180px" onchange="renderCombos()">
+          <option value="">All pairs</option>
+        </select>
+      </div>
+      <div id="combosContainer"></div>
+    </div>
+
+    <!-- TAB: TIMING ANALYSIS -->
+    <div id="ixTab-timing" style="display:none">
+      <div class="notice notice-info" style="margin-bottom:16px">
+        <span>⏱</span>
+        <span>Compares health outcomes when two substances are taken close together (≤4h) vs. spread apart (>4h). Helps identify whether timing matters — e.g. take in morning vs. evening.</span>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+        <select class="form-select" id="timingSubA" style="width:180px" onchange="renderTiming()">
+          <option value="">Substance A</option>
+        </select>
+        <select class="form-select" id="timingSubB" style="width:180px" onchange="renderTiming()">
+          <option value="">Substance B</option>
+        </select>
+        <select class="form-select" id="timingMetric" style="width:180px" onchange="renderTiming()">
+        </select>
+      </div>
+      <div id="timingContainer"></div>
+    </div>
+
+    <!-- TAB: HEATMAP -->
+    <div id="ixTab-heatmap" style="display:none">
+      <div class="notice notice-muted" style="margin-bottom:16px">
+        <span>🗺</span>
+        <span>Each cell shows the average health score delta when both substances are taken together vs. their solo averages. Green = combination better than solo. Red = worse.</span>
+      </div>
+      <div style="margin-bottom:12px;">
+        <select class="form-select" id="heatmapMetric" style="width:200px" onchange="renderHeatmap()"></select>
+      </div>
+      <div class="card" style="padding:16px;">
+        <div class="heatmap-wrap">
+          <table class="heatmap" id="heatmapTable"></table>
+        </div>
+        <div id="heatmapLegend" style="margin-top:14px;display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);">
+          <div style="width:80px;height:8px;border-radius:4px;background:linear-gradient(to right,#f06a6a,#2a3444,#4af0c4)"></div>
+          <span>Worse together ← neutral → Better together</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: USER RULES -->
+    <div id="ixTab-rules" style="display:none">
+      <div class="notice notice-muted" style="margin-bottom:16px">
+        <span>📌</span>
+        <span>Record known interactions, timing recommendations, or personal observations. These are your notes — not medical advice. They appear as reminders on the Log page.</span>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
+        <button class="btn btn-primary" onclick="openRuleModal()">＋ Add Note</button>
+      </div>
+      <div id="rulesContainer"></div>
+    </div>
+
+  </div>
+
+
+  <!-- ======== CYCLE × NUTRITION ======== -->
+  <div class="page" id="page-cyclenutr">
+
+    <div class="notice notice-rose" style="margin-bottom:16px">
+      <span>🌸</span>
+      <span>Analyses how food choices during each cycle phase correlate with period pain, mood, energy and other symptoms. Includes elimination streak analysis and phase-specific heatmaps. Data improves with each logged cycle.</span>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchCxTab('overview')">📊 Phase Overview</button>
+      <button class="tab" onclick="switchCxTab('heatmap')">🗺 Phase × Food Map</button>
+      <button class="tab" onclick="switchCxTab('elimination')">🚫 Elimination Windows</button>
+      <button class="tab" onclick="switchCxTab('deep')">🔬 Deep Dive</button>
+    </div>
+
+    <!-- OVERVIEW TAB -->
+    <div id="cxTab-overview">
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+        <select class="form-select" id="cxOutcomeMetric" style="width:200px" onchange="renderCxOverview()">
+          <option value="pain">🤕 Period Pain</option>
+          <option value="bloat">🫁 Bloating</option>
+          <option value="mood">😌 Cycle Mood</option>
+          <option value="sleep">😴 Sleep Quality</option>
+          <option value="energy">⚡ Energy</option>
+        </select>
+        <select class="form-select" id="cxNutrDim" style="width:200px" onchange="renderCxOverview()">
+        </select>
+      </div>
+      <!-- Summary stat blocks -->
+      <div class="cx-summary-grid" id="cxSummaryBlocks"></div>
+      <!-- Per-phase breakdown cards -->
+      <div id="cxOverviewCards"></div>
+    </div>
+
+    <!-- HEATMAP TAB -->
+    <div id="cxTab-heatmap" style="display:none">
+      <div class="notice notice-muted" style="margin-bottom:14px">
+        <span>🗺</span>
+        <span>Each cell = average outcome score when that food dimension was HIGH (≥6) during that cycle phase. Red = worse outcome, Green = better. Cells with fewer than 2 data points shown as —.</span>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+        <select class="form-select" id="cxHmOutcome" style="width:200px" onchange="renderCxHeatmap()">
+          <option value="pain">🤕 Period Pain</option>
+          <option value="bloat">🫁 Bloating</option>
+          <option value="mood">😌 Cycle Mood</option>
+        </select>
+        <select class="form-select" id="cxHmThresh" style="width:160px" onchange="renderCxHeatmap()">
+          <option value="6">High ≥ 6</option>
+          <option value="5">High ≥ 5</option>
+          <option value="7">High ≥ 7</option>
+        </select>
+      </div>
+      <div class="card" style="padding:16px;overflow-x:auto;">
+        <table class="cx-heatmap" id="cxHeatmapTable"></table>
+        <div style="margin-top:12px;display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);">
+          <div style="width:100px;height:7px;border-radius:3px;background:linear-gradient(to right,#4af0c4,#2a3444,#f06a6a)"></div>
+          <span>Better outcome ← neutral → Worse outcome</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ELIMINATION WINDOWS TAB -->
+    <div id="cxTab-elimination" style="display:none">
+      <div class="notice notice-rose" style="margin-bottom:14px">
+        <span>🚫</span>
+        <span>Detects consecutive low-intake days (≤3/10) for a food dimension within a cycle phase, then measures the outcome in that same phase or the following period. This answers: "what happens when I avoid histamine for 5+ days in my luteal phase?"</span>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+        <select class="form-select" id="elimDim" style="width:200px" onchange="renderElimination()">
+        </select>
+        <select class="form-select" id="elimPhase" style="width:180px" onchange="renderElimination()">
+          <option value="luteal">🟣 Luteal phase</option>
+          <option value="follicular">🟡 Follicular phase</option>
+          <option value="menstrual">🔴 Menstrual phase</option>
+          <option value="ovulation">🟢 Ovulation phase</option>
+          <option value="any">Any phase</option>
+        </select>
+        <select class="form-select" id="elimWindow" style="width:160px" onchange="renderElimination()">
+          <option value="3">3+ day streak</option>
+          <option value="5">5+ day streak</option>
+          <option value="7">7+ day streak</option>
+        </select>
+      </div>
+      <div id="elimContainer"></div>
+    </div>
+
+    <!-- DEEP DIVE TAB -->
+    <div id="cxTab-deep" style="display:none">
+      <div class="notice notice-muted" style="margin-bottom:14px">
+        <span>🔬</span>
+        <span>Pick a specific phase and food dimension. See a day-by-day scatter of intake vs. outcome, Pearson r, and a plain-language summary.</span>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+        <select class="form-select" id="deepPhase" style="width:170px" onchange="renderDeepDive()">
+          <option value="menstrual">🔴 Menstrual</option>
+          <option value="follicular">🟡 Follicular</option>
+          <option value="ovulation">🟢 Ovulation</option>
+          <option value="luteal">🟣 Luteal</option>
+          <option value="any">Any phase</option>
+        </select>
+        <select class="form-select" id="deepDim" style="width:190px" onchange="renderDeepDive()">
+        </select>
+        <select class="form-select" id="deepOutcome" style="width:190px" onchange="renderDeepDive()">
+          <option value="pain">🤕 Period Pain</option>
+          <option value="bloat">🫁 Bloating</option>
+          <option value="mood">😌 Cycle Mood</option>
+          <option value="sleep">😴 Sleep Quality</option>
+          <option value="energy">⚡ Energy</option>
+          <option value="headache">🌀 Headache</option>
+        </select>
+      </div>
+      <div class="card" style="padding:16px;margin-bottom:14px;">
+        <div style="height:220px;position:relative;"><canvas id="deepDiveChart"></canvas></div>
+      </div>
+      <div id="deepDiveSummary"></div>
+    </div>
+
+  </div>
+
   <!-- ======== SETTINGS ======== -->
   <div class="page" id="page-settings">
     <div class="grid-2">
@@ -996,20 +1290,7 @@ function showPage(id){
   refreshPage(id);
 }
 
-function refreshPage(id){
-  if(id==='dashboard')renderDashboard();
-  if(id==='log'){renderLogPage();}
-  if(id==='substances')renderSubstances();
-  if(id==='history')renderHistory();
-  if(id==='health')renderHealthLogs();
-  if(id==='cycle')renderCyclePage();
-  if(id==='nutrition')renderNutritionPage();
-  if(id==='charts'){renderIntakeChart();populateChartDropdowns();}
-  if(id==='correlations'){renderCorrelations();renderCycleCorrelations();renderNutritionCorrelations();}
-  if(id==='delayed'){populateDelayedDropdowns();renderDelayed();}
-  if(id==='insights')renderInsights();
-  if(id==='settings')renderSettings();
-}
+
 
 // =============================================================
 // DATE
@@ -1024,6 +1305,24 @@ function dateStr(d){return(d||new Date()).toISOString().slice(0,10);}
 function switchLogTab(tab){
   ['intake','cycle','nutrition'].forEach(t=>document.getElementById('logTab-'+t).style.display=t===tab?'':'none');
   document.querySelectorAll('#page-log .tab').forEach((el,i)=>el.classList.toggle('active',['intake','cycle','nutrition'][i]===tab));
+}
+
+function refreshPage(id){
+
+  if(id==='dashboard')renderDashboard();
+  if(id==='log'){renderLogPage();}
+  if(id==='substances')renderSubstances();
+  if(id==='history')renderHistory();
+  if(id==='health')renderHealthLogs();
+  if(id==='cycle')renderCyclePage();
+  if(id==='nutrition')renderNutritionPage();
+  if(id==='charts'){renderIntakeChart();populateChartDropdowns();}
+  if(id==='correlations'){renderCorrelations();renderCycleCorrelations();renderNutritionCorrelations();}
+  if(id==='delayed'){populateDelayedDropdowns();renderDelayed();}
+  if(id==='insights')renderInsights();
+  if(id==='settings')renderSettings();
+  if(id==='interactions') renderInteractionsPage();
+  if(id==='cyclenutr') renderCycleNutrPage();
 }
 
 // =============================================================
@@ -1369,6 +1668,129 @@ function getPairs(subId,metricId,lagDays,sourceArray,sourceDate){
   return pairs;
 }
 
+function generateInsights(){
+  const insights=[];
+  const metrics=getEnabledMetrics();
+  const dims=getEnabledNutrition();
+
+  // ── Substance → health (same-day) ────────────────────────
+  state.substances.forEach(sub=>{
+    metrics.forEach(m=>{
+      const pairs=getPairs(sub.id,m.id,0);
+      if(pairs.length>=5){const r=pearson(pairs.map(p=>p[0]),pairs.map(p=>p[1]));
+        if(r!==null&&Math.abs(r)>=0.4){const ben=(r>0&&!m.inverted)||(r<0&&m.inverted);
+          insights.push({icon:ben?'✦':'⚠',type:ben?'':'warn',
+            title:`${sub.name} ${ben?'may improve':'may worsen'} ${m.label}`,
+            body:`Same-day r=${r.toFixed(2)} (n=${pairs.length}). ${Math.abs(r)>=0.6?'Strong':'Moderate'} association.`});}}
+    });
+  });
+
+  // ── Nutrition → cycle pain ────────────────────────────────
+  dims.forEach(d=>{
+    const pairs=getNutrCyclePairs(d.id,'pain',0);
+    if(pairs.length>=3){const r=pearson(pairs.map(p=>p[0]),pairs.map(p=>p[1]));
+      if(r!==null&&Math.abs(r)>=0.35){const bad=r>0;
+        insights.push({icon:'🌸',type:bad?'rose':'',
+          title:`${d.label} ${bad?'may worsen':'may reduce'} period pain`,
+          body:`r=${r.toFixed(2)} (n=${pairs.length}). ${bad?'High '+d.label+' tends to coincide with more pain.':'Lower '+d.label+' tends to coincide with less pain.'}`});}}
+  });
+
+  // ── Nutrition → health metrics ────────────────────────────
+  dims.forEach(d=>{
+    metrics.slice(0,4).forEach(m=>{
+      const pairs=getNutrHealthPairs(d.id,m.id,0);
+      if(pairs.length>=3){const r=pearson(pairs.map(p=>p[0]),pairs.map(p=>p[1]));
+        if(r!==null&&Math.abs(r)>=0.45){const ben=(r>0&&!m.inverted)||(r<0&&m.inverted);
+          insights.push({icon:ben?'🥗':'⚠',type:ben?'neutral':'warn',
+            title:`${d.label} intake linked to ${m.label}`,
+            body:`r=${r.toFixed(2)} (n=${pairs.length}). ${ben?'Higher '+d.label+' tends to associate with better '+m.label+'.':'Higher '+d.label+' may be associated with worse '+m.label+'.'}`});}}
+    });
+  });
+
+  // ── Delayed effects (1-3 day lag) ─────────────────────────
+  state.substances.forEach(sub=>{
+    metrics.slice(0,3).forEach(m=>{
+      for(let lag=1;lag<=3;lag++){
+        const pairs=getPairs(sub.id,m.id,lag);
+        if(pairs.length>=5){const r=pearson(pairs.map(p=>p[0]),pairs.map(p=>p[1]));
+          if(r!==null&&Math.abs(r)>=0.45){const ben=(r>0&&!m.inverted)||(r<0&&m.inverted);
+            insights.push({icon:'⏱',type:ben?'neutral':'warn',
+              title:`${sub.name} → ${m.label} (${lag}-day lag)`,
+              body:`r=${r.toFixed(2)} (n=${pairs.length}). Effect may appear ${lag} day${lag>1?'s':''} after intake.`});}}
+      }
+    });
+  });
+
+  // ── Sleep trend ───────────────────────────────────────────
+  const recentH=state.healthLogs.slice(-7);
+  const svs=recentH.map(l=>l.sleep).filter(v=>v!=null);
+  if(svs.length>=5){const a=svs.reduce((x,y)=>x+y)/svs.length;
+    if(a>=7)insights.push({icon:'😴',type:'',title:'Good sleep trend',body:`Avg sleep: ${a.toFixed(1)}/10 over last ${svs.length} logs.`});
+    if(a<5) insights.push({icon:'😴',type:'bad',title:'Poor sleep detected',body:`Avg sleep: ${a.toFixed(1)}/10. Check correlations for potential causes.`});}
+
+  // ── Cycle insight ─────────────────────────────────────────
+  const recentCycle=state.cycleLogs.slice(-7);
+  if(recentCycle.length>0){
+    const ap=recentCycle.map(l=>l.pain||0).reduce((a,b)=>a+b)/recentCycle.length;
+    if(ap>=6)insights.push({icon:'🌸',type:'rose',title:'High period pain recently',body:`Avg pain: ${ap.toFixed(1)}/10. Check Cycle × Food for dietary patterns.`});}
+
+  // ── Missing health logs ───────────────────────────────────
+  const daysWithIntake=new Set(state.logs.map(l=>l.date));
+  const daysWithHealth=new Set(state.healthLogs.map(l=>l.date));
+  const missed=[...daysWithIntake].filter(d=>!daysWithHealth.has(d)).length;
+  if(missed>=3)insights.push({icon:'○',type:'warn',
+    title:`${missed} days missing health logs`,
+    body:'You logged substances without matching health logs. These days are excluded from correlations.'});
+
+  // ── Combination interaction insights ─────────────────────
+  ensureRules();
+  const subs=state.substances;
+  for(let i=0;i<subs.length;i++){
+    for(let j=i+1;j<subs.length;j++){
+      metrics.slice(0,4).forEach(m=>{
+        const stats=getComboStats(subs[i].id,subs[j].id,m.id);
+        if(stats.both.n<3||stats.aOnly.avg==null||stats.bOnly.avg==null||stats.both.avg==null) return;
+        const baseline=(stats.aOnly.avg+stats.bOnly.avg)/2;
+        const delta=m.inverted?baseline-stats.both.avg:stats.both.avg-baseline;
+        if(Math.abs(delta)>=1.0){
+          const better=delta>0;
+          insights.push({icon:better?'⚗️':'⚠',type:better?'neutral':'warn',
+            title:`${subs[i].name} + ${subs[j].name} → ${m.label}`,
+            body:`Combination ${better?'improves':'worsens'} ${m.label} by ${Math.abs(delta).toFixed(1)} points vs. solo (n=${stats.both.n} days).`});}
+      });
+    }
+  }
+  state.interactionRules.filter(r=>r.type==='warning').forEach(r=>{
+    const a=state.substances.find(s=>s.id===r.subAId);
+    const b=state.substances.find(s=>s.id===r.subBId);
+    if(a)insights.push({icon:'🚫',type:'bad',
+      title:`Flagged interaction: ${a.name}${b?' + '+b.name:''}`,
+      body:r.notes||'Check your interaction notes for details.'});
+  });
+
+  // ── Cycle × Food insights ─────────────────────────────────
+  const outcomes=['pain','bloat','mood'];
+  PHASES.forEach(phase=>{
+    dims.forEach(d=>{
+      outcomes.forEach(out=>{
+        const pairs=getCxPairs(d.id,out,phase);
+        if(pairs.length<3) return;
+        const r=pearson(pairs.map(p=>p.nutrVal),pairs.map(p=>p.outcomeVal));
+        if(r==null||Math.abs(r)<0.4) return;
+        const isInv=['pain','bloat'].includes(out);
+        const harmful=(r>0&&isInv)||(r<0&&!isInv);
+        insights.push({icon:'🌸🥗',type:harmful?'rose':'neutral',
+          title:`${d.label} → ${outLabel(out)} in ${PHASE_LABELS[phase]} phase`,
+          body:`r=${r.toFixed(2)} (n=${pairs.length}). ${harmful
+            ?`High ${d.label} during your ${PHASE_LABELS[phase].replace(/[🔴🟡🟢🟣]\s/,'')} phase associates with worse ${outLabel(out)}.`
+            :`Lower ${d.label} during your ${PHASE_LABELS[phase].replace(/[🔴🟡🟢🟣]\s/,'')} phase associates with better ${outLabel(out)}.`}`});
+      });
+    });
+  });
+
+  return insights;
+}
+
 function getNutrCyclePairs(nutrId,cycleMetric,lagDays){
   const pairs=[];
   state.cycleLogs.forEach(cl=>{
@@ -1708,62 +2130,7 @@ function renderInsights(){
   container.innerHTML=insights.map(ins=>`<div class="insight-card ${ins.type||''}"><div style="font-size:18px">${ins.icon}</div><div><div class="insight-title">${ins.title}</div><div class="insight-body">${ins.body}</div></div></div>`).join('');
 }
 
-function generateInsights(){
-  const insights=[];
-  const metrics=getEnabledMetrics();
-  const dims=getEnabledNutrition();
 
-  // Substance → health correlations
-  state.substances.forEach(sub=>{
-    metrics.forEach(m=>{
-      const pairs=getPairs(sub.id,m.id,0);
-      if(pairs.length>=5){const r=pearson(pairs.map(p=>p[0]),pairs.map(p=>p[1]));
-        if(r!==null&&Math.abs(r)>=0.4){const ben=(r>0&&!m.inverted)||(r<0&&m.inverted);insights.push({icon:ben?'✦':'⚠',type:ben?'':'warn',title:`${sub.name} ${ben?'may improve':'may worsen'} ${m.label}`,body:`Same-day r=${r.toFixed(2)} (n=${pairs.length}). ${Math.abs(r)>=0.6?'Strong':'Moderate'} association.`});}}
-    });
-  });
-
-  // Nutrition → cycle pain
-  dims.forEach(d=>{
-    const pairs=getNutrCyclePairs(d.id,'pain',0);
-    if(pairs.length>=3){const r=pearson(pairs.map(p=>p[0]),pairs.map(p=>p[1]));
-      if(r!==null&&Math.abs(r)>=0.35){const bad=r>0;insights.push({icon:'🌸',type:bad?'rose':'',title:`${d.label} ${bad?'may worsen':'may reduce'} period pain`,body:`Nutrition-cycle correlation r=${r.toFixed(2)} (n=${pairs.length}). ${bad?'High '+d.label+' intake tends to coincide with more pain.':'Lower '+d.label+' intake tends to coincide with less pain.'}`});}}
-  });
-
-  // Nutrition → health
-  dims.forEach(d=>{
-    metrics.slice(0,4).forEach(m=>{
-      const pairs=getNutrHealthPairs(d.id,m.id,0);
-      if(pairs.length>=3){const r=pearson(pairs.map(p=>p[0]),pairs.map(p=>p[1]));
-        if(r!==null&&Math.abs(r)>=0.45){const ben=(r>0&&!m.inverted)||(r<0&&m.inverted);insights.push({icon:ben?'🥗':'⚠',type:ben?'neutral':'warn',title:`${d.label} intake linked to ${m.label}`,body:`r=${r.toFixed(2)} (n=${pairs.length}). ${ben?'Higher '+d.label+' tends to associate with better '+m.label+'.':'Higher '+d.label+' may be associated with worse '+m.label+'.'}`});}}
-    });
-  });
-
-  // Delayed effects
-  state.substances.forEach(sub=>{
-    metrics.slice(0,3).forEach(m=>{
-      for(let lag=1;lag<=3;lag++){
-        const pairs=getPairs(sub.id,m.id,lag);
-        if(pairs.length>=5){const r=pearson(pairs.map(p=>p[0]),pairs.map(p=>p[1]));
-          if(r!==null&&Math.abs(r)>=0.45){const ben=(r>0&&!m.inverted)||(r<0&&m.inverted);insights.push({icon:'⏱',type:ben?'neutral':'warn',title:`${sub.name} → ${m.label} (${lag}-day lag)`,body:`r=${r.toFixed(2)} (n=${pairs.length}). Effect may appear ${lag} day${lag>1?'s':''} after intake.`});}}
-      }
-    });
-  });
-
-  // Sleep trend
-  const recentH=state.healthLogs.slice(-7);const svs=recentH.map(l=>l.sleep).filter(v=>v!=null);
-  if(svs.length>=5){const avg=svs.reduce((a,b)=>a+b)/svs.length;if(avg>=7)insights.push({icon:'😴',type:'',title:'Good sleep trend',body:`Avg sleep: ${avg.toFixed(1)}/10 over last ${svs.length} logs.`});if(avg<5)insights.push({icon:'😴',type:'bad',title:'Poor sleep detected',body:`Avg sleep: ${avg.toFixed(1)}/10. Check correlations for potential causes.`});}
-
-  // Cycle insight
-  const recentCycle=state.cycleLogs.slice(-7);
-  if(recentCycle.length>0){const avgPain=recentCycle.map(l=>l.pain||0).reduce((a,b)=>a+b)/recentCycle.length;if(avgPain>=6)insights.push({icon:'🌸',type:'rose',title:'High period pain recently',body:`Avg pain: ${avgPain.toFixed(1)}/10. Consider checking Correlations → Nutrition → Period Pain for food-related patterns.`});}
-
-  // Missing health logs
-  const daysWithIntake=new Set(state.logs.map(l=>l.date));const daysWithHealth=new Set(state.healthLogs.map(l=>l.date));
-  const missed=[...daysWithIntake].filter(d=>!daysWithHealth.has(d)).length;
-  if(missed>=3)insights.push({icon:'○',type:'warn',title:`${missed} days missing health logs`,body:'You logged substances without matching health logs. These days are excluded from correlations.'});
-
-  return insights;
-}
 
 // =============================================================
 // SETTINGS
@@ -1924,58 +2291,955 @@ function init(){
   document.getElementById('logDate').value=dateStr();document.getElementById('logTime').value=new Date().toTimeString().slice(0,5);
   document.getElementById('cycleDate').value=dateStr();document.getElementById('nutritionDate').value=dateStr();
 }
-init();
-</script>
 
-<div id="offlineBanner">📵 Offline — your data is still safe</div>
-<div id="navBackdrop" onclick="closeNav()"></div>
-<div id="navDrawer">
-  <div class="nd-head">
-    <span class="nd-logo">🐝 Well-bee</span>
-    <button class="nd-close" onclick="closeNav()">✕</button>
-  </div>
-  <div class="nd-streak">
-    <div class="nd-streak-num" id="drawerStreak">0</div>
-    <div class="nd-streak-lbl">🔥 Day Streak</div>
-  </div>
-  <nav style="padding:6px;">
-    <div class="nd-section">Overview</div>
-    <button class="nd-item active" data-page="dashboard" onclick="goTo('dashboard')"><span class="ni">⬡</span>Dashboard</button>
-    <button class="nd-item" data-page="log" onclick="goTo('log')"><span class="ni">＋</span>Log Entry</button>
-    <div class="nd-section">Tracking</div>
-    <button class="nd-item" data-page="substances" onclick="goTo('substances')"><span class="ni">💊</span>Substances</button>
-    <button class="nd-item" data-page="history" onclick="goTo('history')"><span class="ni">📋</span>Intake History</button>
-    <button class="nd-item" data-page="health" onclick="goTo('health')"><span class="ni">🩺</span>Health Logs</button>
-    <button class="nd-item" data-page="cycle" onclick="goTo('cycle')"><span class="ni">🌸</span>Cycle Tracker</button>
-    <button class="nd-item" data-page="nutrition" onclick="goTo('nutrition')"><span class="ni">🥗</span>Nutrition</button>
-    <div class="nd-section">Analysis</div>
-    <button class="nd-item" data-page="charts" onclick="goTo('charts')"><span class="ni">📈</span>Charts</button>
-    <button class="nd-item" data-page="correlations" onclick="goTo('correlations')"><span class="ni">🔗</span>Correlations</button>
-    <button class="nd-item" data-page="delayed" onclick="goTo('delayed')"><span class="ni">⏱</span>Delayed Effects</button>
-    <button class="nd-item" data-page="insights" onclick="goTo('insights')"><span class="ni">✦</span>AI Insights</button>
-    <div class="nd-section">System</div>
-    <button class="nd-item" data-page="settings" onclick="goTo('settings')"><span class="ni">⚙</span>Settings</button>
-  </nav>
-</div>
-<nav id="bottomTabs">
-  <button class="btab on" data-page="dashboard" onclick="goTo('dashboard')"><span class="bi">⬡</span>Home</button>
-  <button class="btab" data-page="log" onclick="goTo('log')"><span class="bi">＋</span>Log</button>
-  <button class="btab" data-page="cycle" onclick="goTo('cycle')"><span class="bi">🌸</span>Cycle</button>
-  <button class="btab" data-page="nutrition" onclick="goTo('nutrition')"><span class="bi">🥗</span>Food</button>
-  <button class="btab" onclick="openNav()"><span class="bi">☰</span>More</button>
-</nav>
-<div id="installBanner">
-  <div class="ib-icon">🐝</div>
-  <div class="ib-text">
-    <div class="ib-title">Install Well-bee</div>
-    <div class="ib-sub">Add to home screen — works offline</div>
-  </div>
-  <div class="ib-btns">
-    <button class="btn btn-ghost btn-sm" onclick="dismissInstall()">Later</button>
-    <button class="btn btn-primary btn-sm" onclick="doInstall()">Install</button>
-  </div>
-</div>
-<script>
+
+// =============================================================
+// INTERACTIONS — state extension
+// =============================================================
+// Ensure state.interactionRules exists
+function ensureRules(){
+  if(!state.interactionRules) state.interactionRules = [];
+}
+
+// =============================================================
+// PAGE META — add interactions
+// =============================================================
+pageMeta['interactions'] = ['Interactions', 'Combination effects & timing analysis'];
+
+// =============================================================
+// refreshPage — add interactions handler
+// =============================================================
+
+
+// =============================================================
+// INTERACTIONS PAGE
+// =============================================================
+function renderInteractionsPage(){
+  ensureRules();
+  populateIxDropdowns();
+  renderCombos();
+  renderRules();
+}
+
+function switchIxTab(tab){
+  ['combos','timing','heatmap','rules'].forEach(t=>{
+    document.getElementById('ixTab-'+t).style.display = t===tab?'':'none';
+  });
+  document.querySelectorAll('#page-interactions .tab').forEach((el,i)=>{
+    el.classList.toggle('active', ['combos','timing','heatmap','rules'][i]===tab);
+  });
+  if(tab==='heatmap') renderHeatmap();
+  if(tab==='timing') renderTiming();
+}
+
+function populateIxDropdowns(){
+  const opts = state.substances.map(s=>`<option value="${s.id}">${s.emoji} ${s.name}</option>`).join('');
+  const mOpts = getEnabledMetrics().map(m=>`<option value="${m.id}">${m.icon} ${m.label}</option>`).join('');
+
+  // Combo tab
+  const ims = document.getElementById('ixMetricSelect');
+  if(ims) ims.innerHTML = mOpts;
+  const isa = document.getElementById('ixSubA');
+  if(isa) isa.innerHTML = '<option value="">All pairs</option>' + opts;
+
+  // Timing tab
+  ['timingSubA','timingSubB'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.innerHTML = `<option value="">— Select —</option>${opts}`;
+  });
+  const tm = document.getElementById('timingMetric');
+  if(tm) tm.innerHTML = mOpts;
+
+  // Heatmap
+  const hm = document.getElementById('heatmapMetric');
+  if(hm) hm.innerHTML = mOpts;
+
+  // Rule modal
+  ['ruleSubA','ruleSubB'].forEach((id,i)=>{
+    const el = document.getElementById(id);
+    if(el) el.innerHTML = (i===1?'<option value="">Any / General</option>':'<option value="">Select</option>') + opts;
+  });
+}
+
+// ── COMBINATION EFFECTS ──────────────────────────────────────
+function getDayCondition(date, subAId, subBId){
+  const hasA = state.logs.some(l=>l.date===date && l.substanceId===subAId);
+  const hasB = state.logs.some(l=>l.date===date && l.substanceId===subBId);
+  if(hasA && hasB) return 'both';
+  if(hasA) return 'aOnly';
+  if(hasB) return 'bOnly';
+  return 'neither';
+}
+
+function getComboStats(subAId, subBId, metricId){
+  const buckets = {both:[], aOnly:[], bOnly:[], neither:[]};
+  state.healthLogs.forEach(hl=>{
+    if(hl[metricId]==null) return;
+    const cond = getDayCondition(hl.date, subAId, subBId);
+    buckets[cond].push(hl[metricId]);
+  });
+  const avg = arr => arr.length>=1 ? arr.reduce((a,b)=>a+b)/arr.length : null;
+  return {
+    both:   {avg: avg(buckets.both),    n: buckets.both.length},
+    aOnly:  {avg: avg(buckets.aOnly),   n: buckets.aOnly.length},
+    bOnly:  {avg: avg(buckets.bOnly),   n: buckets.bOnly.length},
+    neither:{avg: avg(buckets.neither), n: buckets.neither.length},
+  };
+}
+
+function renderCombos(){
+  ensureRules();
+  const container = document.getElementById('combosContainer');
+  if(!container) return;
+  const metricId = document.getElementById('ixMetricSelect')?.value || 'sleep';
+  const filterA  = document.getElementById('ixSubA')?.value || '';
+  const metric   = getEnabledMetrics().find(m=>m.id===metricId);
+
+  // Build all pairs
+  const subs = state.substances;
+  const pairs = [];
+  for(let i=0;i<subs.length;i++){
+    for(let j=i+1;j<subs.length;j++){
+      if(filterA && subs[i].id!==filterA && subs[j].id!==filterA) continue;
+      const stats = getComboStats(subs[i].id, subs[j].id, metricId);
+      // Need at least 3 days for combo
+      if(stats.both.n >= 2) pairs.push({a:subs[i], b:subs[j], stats});
+    }
+  }
+
+  if(pairs.length===0){
+    container.innerHTML = `<div class="empty"><div class="empty-icon">🔬</div>
+      <div class="empty-title">Not enough co-administration data</div>
+      <div class="empty-sub">You need at least 2 days where two substances were both taken to see combination effects. Keep logging!</div></div>`;
+    return;
+  }
+
+  // Sort by combo benefit (both.avg - max(aOnly, bOnly))
+  pairs.sort((x,y)=>{
+    const xDelta = x.stats.both.avg!=null && x.stats.aOnly.avg!=null && x.stats.bOnly.avg!=null
+      ? x.stats.both.avg - Math.max(x.stats.aOnly.avg||0, x.stats.bOnly.avg||0) : -99;
+    const yDelta = y.stats.both.avg!=null && y.stats.aOnly.avg!=null && y.stats.bOnly.avg!=null
+      ? y.stats.both.avg - Math.max(y.stats.aOnly.avg||0, y.stats.bOnly.avg||0) : -99;
+    return Math.abs(yDelta) - Math.abs(xDelta);
+  });
+
+  container.innerHTML = pairs.map(({a,b,stats})=>{
+    const {both,aOnly,bOnly,neither} = stats;
+    const inv = metric?.inverted;
+    const comboBetter = both.avg!=null && aOnly.avg!=null && bOnly.avg!=null
+      ? (inv ? both.avg < Math.min(aOnly.avg,bOnly.avg) : both.avg > Math.max(aOnly.avg,bOnly.avg))
+      : null;
+    const comboWorse = both.avg!=null && aOnly.avg!=null && bOnly.avg!=null
+      ? (inv ? both.avg > Math.max(aOnly.avg,bOnly.avg) : both.avg < Math.min(aOnly.avg,bOnly.avg))
+      : null;
+    const cardClass = comboBetter?'positive':comboWorse?'negative':'neutral';
+    const delta = both.avg!=null && aOnly.avg!=null && bOnly.avg!=null
+      ? (both.avg - (aOnly.avg+bOnly.avg)/2) : null;
+    const deltaStr = delta!=null
+      ? `${delta>=0?'+':''}${delta.toFixed(1)} vs solo avg`
+      : '';
+    const deltaColor = delta==null?'var(--text-dim)':
+      inv?(delta<0?'var(--good)':delta>0?'var(--bad)':'var(--text-muted)'):
+          (delta>0?'var(--good)':delta<0?'var(--bad)':'var(--text-muted)');
+
+    const vsBlock = (label, val, n, highlight) => {
+      const c = val==null?'var(--text-dim)':
+        inv?(val<=3?'var(--good)':val<=6?'var(--warn)':'var(--bad)'):
+            (val>=7?'var(--good)':val>=4?'var(--warn)':'var(--bad)');
+      return `<div class="vs-block" style="${highlight?'border:1px solid var(--accent2);':''}">
+        <div class="vs-label">${label}</div>
+        <div class="vs-val" style="color:${c}">${val!=null?val.toFixed(1):'—'}</div>
+        <div class="vs-n">n=${n}</div>
+      </div>`;
+    };
+
+    return `<div class="icard ${cardClass}">
+      <div class="combo-pair">
+        <div class="combo-pill">${a.emoji} ${a.name}</div>
+        <span class="combo-plus">+</span>
+        <div class="combo-pill">${b.emoji} ${b.name}</div>
+        <div style="margin-left:auto;font-size:11px;color:${deltaColor};font-weight:600">${deltaStr}</div>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px">${metric?.icon} ${metric?.label} — avg scores by condition</div>
+      <div class="combo-vs">
+        ${vsBlock('Both together', both.avg, both.n, true)}
+        ${vsBlock('${a.name.split(' ')[0]} only', aOnly.avg, aOnly.n, false)}
+        ${vsBlock('${b.name.split(' ')[0]} only', bOnly.avg, bOnly.n, false)}
+        ${vsBlock('Neither', neither.avg, neither.n, false)}
+      </div>
+      ${comboBetter?`<div style="margin-top:10px;font-size:12px;color:var(--good)">✦ Taking these together associates with better ${metric?.label}</div>`:''}
+      ${comboWorse?`<div style="margin-top:10px;font-size:12px;color:var(--bad)">⚠ Taking these together associates with lower ${metric?.label}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ── TIMING ANALYSIS ──────────────────────────────────────────
+function parseHour(timeStr){
+  if(!timeStr) return null;
+  const [h,m] = timeStr.split(':').map(Number);
+  return h + (m||0)/60;
+}
+
+function getTimingStats(subAId, subBId, metricId){
+  // For each health log day, check if both were taken and how far apart
+  const close=[], far=[], aOnly=[], bOnly=[];
+  const THRESHOLD = 4; // hours
+
+  state.healthLogs.forEach(hl=>{
+    if(hl[metricId]==null) return;
+    const aLogs = state.logs.filter(l=>l.date===hl.date && l.substanceId===subAId);
+    const bLogs = state.logs.filter(l=>l.date===hl.date && l.substanceId===subBId);
+    const hasA = aLogs.length>0, hasB = bLogs.length>0;
+    if(hasA && hasB){
+      // Find minimum time gap between any A and any B intake
+      let minGap = Infinity;
+      aLogs.forEach(a=>{
+        bLogs.forEach(b=>{
+          const ha = parseHour(a.time), hb = parseHour(b.time);
+          if(ha!=null && hb!=null) minGap = Math.min(minGap, Math.abs(ha-hb));
+        });
+      });
+      if(minGap <= THRESHOLD) close.push(hl[metricId]);
+      else far.push(hl[metricId]);
+    } else if(hasA){ aOnly.push(hl[metricId]); }
+    else if(hasB){ bOnly.push(hl[metricId]); }
+  });
+
+  const avg = arr => arr.length>0 ? arr.reduce((a,b)=>a+b)/arr.length : null;
+  return {
+    close: {avg:avg(close), n:close.length},
+    far:   {avg:avg(far),   n:far.length},
+    aOnly: {avg:avg(aOnly), n:aOnly.length},
+    bOnly: {avg:avg(bOnly), n:bOnly.length},
+  };
+}
+
+function renderTiming(){
+  const container = document.getElementById('timingContainer');
+  if(!container) return;
+  const subAId   = document.getElementById('timingSubA')?.value||'';
+  const subBId   = document.getElementById('timingSubB')?.value||'';
+  const metricId = document.getElementById('timingMetric')?.value||'sleep';
+  if(!subAId || !subBId || subAId===subBId){
+    container.innerHTML=`<div class="notice notice-muted"><span>ℹ</span><span>Select two different substances to analyse timing.</span></div>`;
+    return;
+  }
+  const subA = state.substances.find(x=>x.id===subAId);
+  const subB = state.substances.find(x=>x.id===subBId);
+  const metric = getEnabledMetrics().find(m=>m.id===metricId);
+  const stats  = getTimingStats(subAId, subBId, metricId);
+  const inv    = metric?.inverted;
+
+  const valColor = (v) => v==null?'var(--text-dim)':
+    inv?(v<=3?'var(--good)':v<=6?'var(--warn)':'var(--bad)'):
+        (v>=7?'var(--good)':v>=4?'var(--warn)':'var(--bad)');
+
+  const closeBetter = stats.close.avg!=null && stats.far.avg!=null
+    ? (inv ? stats.close.avg < stats.far.avg : stats.close.avg > stats.far.avg) : null;
+
+  const delta = stats.close.avg!=null && stats.far.avg!=null
+    ? stats.close.avg - stats.far.avg : null;
+
+  container.innerHTML = `
+    <div class="icard ${closeBetter===true?'positive':closeBetter===false?'negative':'neutral'}">
+      <div class="combo-pair">
+        <div class="combo-pill">${subA.emoji} ${subA.name}</div>
+        <span class="combo-plus">vs</span>
+        <div class="combo-pill">${subB.emoji} ${subB.name}</div>
+        <span style="font-size:12px;color:var(--text-muted);margin-left:8px">${metric?.icon} ${metric?.label}</span>
+      </div>
+
+      <div style="margin-bottom:14px">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.7px">Avg ${metric?.label} by timing</div>
+        <div class="combo-vs">
+          <div class="vs-block" style="border:1px solid var(--accent2)">
+            <div class="vs-label">≤4h apart</div>
+            <div class="vs-val" style="color:${valColor(stats.close.avg)}">${stats.close.avg!=null?stats.close.avg.toFixed(1):'—'}</div>
+            <div class="vs-n">n=${stats.close.n}</div>
+          </div>
+          <div class="vs-block">
+            <div class="vs-label">&gt;4h apart</div>
+            <div class="vs-val" style="color:${valColor(stats.far.avg)}">${stats.far.avg!=null?stats.far.avg.toFixed(1):'—'}</div>
+            <div class="vs-n">n=${stats.far.n}</div>
+          </div>
+          <div class="vs-block">
+            <div class="vs-label">${subA.name.split(' ')[0]} only</div>
+            <div class="vs-val" style="color:${valColor(stats.aOnly.avg)}">${stats.aOnly.avg!=null?stats.aOnly.avg.toFixed(1):'—'}</div>
+            <div class="vs-n">n=${stats.aOnly.n}</div>
+          </div>
+          <div class="vs-block">
+            <div class="vs-label">${subB.name.split(' ')[0]} only</div>
+            <div class="vs-val" style="color:${valColor(stats.bOnly.avg)}">${stats.bOnly.avg!=null?stats.bOnly.avg.toFixed(1):'—'}</div>
+            <div class="vs-n">n=${stats.bOnly.n}</div>
+          </div>
+        </div>
+      </div>
+
+      ${delta!=null ? `
+        <div style="padding:10px;background:var(--surface2);border-radius:8px;font-size:13px;">
+          ${closeBetter
+            ? `✦ <strong>Taking them within 4h associates with ${Math.abs(delta).toFixed(1)} better ${metric?.label}</strong> — consider combining them in the same session.`
+            : closeBetter===false
+            ? `⚠ <strong>Separating them by &gt;4h associates with ${Math.abs(delta).toFixed(1)} better ${metric?.label}</strong> — consider spacing them out (e.g. morning / evening).`
+            : `No clear timing preference found yet — keep logging for more data.`
+          }
+        </div>` : '<div class="notice notice-muted"><span>○</span><span>Not enough co-administration data yet.</span></div>'}
+    </div>`;
+}
+
+// ── HEATMAP ──────────────────────────────────────────────────
+function renderHeatmap(){
+  const table = document.getElementById('heatmapTable');
+  if(!table) return;
+  const metricId = document.getElementById('heatmapMetric')?.value||'sleep';
+  const metric   = getEnabledMetrics().find(m=>m.id===metricId);
+  const subs     = state.substances;
+  if(subs.length<2){ table.innerHTML='<tr><td style="color:var(--text-muted);padding:20px">Add at least 2 substances to see the heatmap.</td></tr>'; return; }
+
+  // Build solo averages for each substance
+  const soloAvg = {};
+  subs.forEach(s=>{
+    const vals=[];
+    state.healthLogs.forEach(hl=>{
+      if(hl[metricId]==null) return;
+      const hasThis = state.logs.some(l=>l.date===hl.date&&l.substanceId===s.id);
+      const hasOther = subs.filter(o=>o.id!==s.id).some(o=>state.logs.some(l=>l.date===hl.date&&l.substanceId===o.id));
+      if(hasThis && !hasOther) vals.push(hl[metricId]);
+    });
+    soloAvg[s.id] = vals.length>0 ? vals.reduce((a,b)=>a+b)/vals.length : null;
+  });
+
+  // Build header
+  let headRow = '<tr><th class="hm-label"></th>' + subs.map(s=>`<th title="${s.name}">${s.emoji}<br><span style="font-size:9px">${s.name.split(' ')[0]}</span></th>`).join('') + '</tr>';
+
+  // Build rows
+  const rows = subs.map(a=>{
+    const cells = subs.map(b=>{
+      if(a.id===b.id) return `<td style="background:var(--surface2);color:var(--text-dim)">—</td>`;
+      const stats = getComboStats(a.id, b.id, metricId);
+      if(stats.both.n<2) return `<td style="background:var(--surface2);color:var(--text-dim);font-size:10px">n=${stats.both.n}</td>`;
+      const baseline = (soloAvg[a.id]!=null && soloAvg[b.id]!=null)
+        ? (soloAvg[a.id]+soloAvg[b.id])/2 : null;
+      if(baseline==null || stats.both.avg==null) return `<td style="background:var(--surface2);color:var(--text-dim)">?</td>`;
+      const delta = metric?.inverted
+        ? baseline - stats.both.avg  // lower pain = positive
+        : stats.both.avg - baseline;
+      const intensity = Math.min(Math.abs(delta)/3, 1);
+      let bg, col;
+      if(delta>0.15){
+        bg=`rgba(74,240,196,${0.15+intensity*0.45})`;col='var(--good)';
+      } else if(delta<-0.15){
+        bg=`rgba(240,106,106,${0.15+intensity*0.45})`;col='var(--bad)';
+      } else {
+        bg='var(--surface2)';col='var(--text-muted)';
+      }
+      const sign = delta>0?'+':'';
+      return `<td style="background:${bg};color:${col}" title="${a.name} + ${b.name}: ${sign}${delta.toFixed(1)} vs solo">${sign}${delta.toFixed(1)}</td>`;
+    }).join('');
+    return `<tr><td class="hm-label">${a.emoji} ${a.name.split(' ')[0]}</td>${cells}</tr>`;
+  }).join('');
+
+  table.innerHTML = headRow + rows;
+}
+
+// ── USER INTERACTION RULES ───────────────────────────────────
+function openRuleModal(id){
+  ensureRules();
+  populateIxDropdowns();
+  document.getElementById('ruleSubA').value='';
+  document.getElementById('ruleSubB').value='';
+  document.getElementById('ruleType').value='synergy';
+  document.getElementById('ruleTiming').value='';
+  document.getElementById('ruleNotes').value='';
+  document.getElementById('ruleSource').value='personal';
+  document.getElementById('ruleEditId').value='';
+  document.getElementById('ruleModalTitle').textContent='Add Interaction Note';
+  renderRuleMetricEffect();
+  if(id){
+    const rule = state.interactionRules.find(r=>r.id===id);
+    if(rule){
+      document.getElementById('ruleSubA').value=rule.subAId||'';
+      document.getElementById('ruleSubB').value=rule.subBId||'';
+      document.getElementById('ruleType').value=rule.type||'note';
+      document.getElementById('ruleTiming').value=rule.timing||'';
+      document.getElementById('ruleNotes').value=rule.notes||'';
+      document.getElementById('ruleSource').value=rule.source||'personal';
+      document.getElementById('ruleEditId').value=rule.id;
+      document.getElementById('ruleModalTitle').textContent='Edit Interaction Note';
+    }
+  }
+  openModal('ruleModal');
+}
+
+function renderRuleMetricEffect(){
+  const el = document.getElementById('ruleMetricEffect');
+  if(!el) return;
+  el.innerHTML = getEnabledMetrics().map(m=>`
+    <div style="display:flex;align-items:center;gap:5px;background:var(--surface2);padding:5px 9px;border-radius:20px;font-size:12px;">
+      <span>${m.icon}</span>
+      <span>${m.label}</span>
+      <select style="background:var(--bg);border:none;color:var(--text-muted);font-size:11px;cursor:pointer;" id="ruleEffect_${m.id}">
+        <option value="">—</option>
+        <option value="positive">↑ Better</option>
+        <option value="negative">↓ Worse</option>
+        <option value="neutral">~ Neutral</option>
+      </select>
+    </div>`).join('');
+}
+
+function saveRule(){
+  ensureRules();
+  const editId = document.getElementById('ruleEditId').value;
+  const effects = {};
+  getEnabledMetrics().forEach(m=>{
+    const el = document.getElementById('ruleEffect_'+m.id);
+    if(el&&el.value) effects[m.id]=el.value;
+  });
+  const rule = {
+    id: editId||'rule_'+Date.now(),
+    subAId: document.getElementById('ruleSubA').value||null,
+    subBId: document.getElementById('ruleSubB').value||null,
+    type:   document.getElementById('ruleType').value,
+    timing: document.getElementById('ruleTiming').value||null,
+    notes:  document.getElementById('ruleNotes').value.trim(),
+    source: document.getElementById('ruleSource').value,
+    effects,
+    createdAt: new Date().toISOString(),
+  };
+  if(editId){ const i=state.interactionRules.findIndex(r=>r.id===editId); if(i>=0)state.interactionRules[i]=rule; }
+  else state.interactionRules.push(rule);
+  save(); closeModal('ruleModal'); renderRules(); showToast('Interaction note saved ✓');
+}
+
+function renderRules(){
+  ensureRules();
+  const container = document.getElementById('rulesContainer');
+  if(!container) return;
+  if(state.interactionRules.length===0){
+    container.innerHTML=`<div class="empty"><div class="empty-icon">📌</div>
+      <div class="empty-title">No interaction notes yet</div>
+      <div class="empty-sub">Add notes about known interactions, timing recommendations, or personal observations</div></div>`;
+    return;
+  }
+  const typeConfig = {
+    synergy:   {icon:'✅',color:'var(--good)',   label:'Synergy'},
+    antagonism:{icon:'⚠',color:'var(--warn)',   label:'Antagonism'},
+    timing:    {icon:'⏱',color:'var(--accent2)',label:'Timing'},
+    warning:   {icon:'🚫',color:'var(--bad)',    label:'Warning'},
+    note:      {icon:'📝',color:'var(--text-muted)',label:'Note'},
+  };
+  const timingLabels = {
+    '30min':'30 min apart','1h':'1 hour apart','2h':'2 hours apart',
+    '4h':'4 hours apart','morning_evening':'A morning / B evening',
+    'together':'Take together','food':'Take with food','empty':'Take on empty stomach'
+  };
+  const sourceLabels = {personal:'Personal obs.',research:'Research',doctor:'Healthcare provider',community:'Community'};
+  container.innerHTML = [...state.interactionRules].reverse().map(rule=>{
+    const subA = state.substances.find(s=>s.id===rule.subAId);
+    const subB = state.substances.find(s=>s.id===rule.subBId);
+    const tc = typeConfig[rule.type]||typeConfig.note;
+    const effKeys = Object.keys(rule.effects||{});
+    return `<div class="rule-card">
+      <div class="rule-icon">${tc.icon}</div>
+      <div class="rule-body">
+        <div class="rule-title" style="color:${tc.color}">
+          ${tc.label}
+          ${subA?` · ${subA.emoji} ${subA.name}`:''}
+          ${subB?' + '+subB.emoji+' '+subB.name:''}
+        </div>
+        ${rule.timing?`<div style="font-size:12px;color:var(--accent2);margin:3px 0">⏱ ${timingLabels[rule.timing]||rule.timing}</div>`:''}
+        ${rule.notes?`<div class="rule-desc">${rule.notes}</div>`:''}
+        ${effKeys.length>0?`<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">${effKeys.map(k=>{
+          const m=getEnabledMetrics().find(x=>x.id===k);
+          const e=rule.effects[k];
+          const c=e==='positive'?'var(--good)':e==='negative'?'var(--bad)':'var(--text-muted)';
+          return `<span style="font-size:11px;background:var(--surface);border:1px solid var(--border);padding:2px 7px;border-radius:12px;color:${c}">${m?.icon||k} ${e==='positive'?'↑':e==='negative'?'↓':'~'}</span>`;
+        }).join('')}</div>`:''}
+        <div class="rule-meta">${sourceLabels[rule.source]||rule.source} · ${rule.createdAt?.slice(0,10)||''}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+        <button class="btn btn-ghost btn-sm" onclick="openRuleModal('${rule.id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteRule('${rule.id}')">Del</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function deleteRule(id){
+  ensureRules();
+  if(!confirm('Delete this interaction note?')) return;
+  state.interactionRules = state.interactionRules.filter(r=>r.id!==id);
+  save(); renderRules();
+}
+
+// ── SURFACE INTERACTION INSIGHTS ON INSIGHTS PAGE ────────────
+
+
+// ── PATCH init to initialise interactionRules ────────────────
+
+
+// =============================================================
+// CYCLE × NUTRITION ENGINE
+// =============================================================
+
+pageMeta['cyclenutr'] = ['Cycle × Food', 'How diet shapes your cycle phases'];
+
+// Patch refreshPage for the new page
+
+
+const PHASES = ['menstrual','follicular','ovulation','luteal'];
+const PHASE_LABELS = {menstrual:'🔴 Menstrual',follicular:'🟡 Follicular',ovulation:'🟢 Ovulation',luteal:'🟣 Luteal'};
+const PHASE_COLORS = {menstrual:'#f06a9a',follicular:'#f0c44a',ovulation:'#4af0c4',luteal:'#7c6af7'};
+
+// ── CORE DATA JOINERS ─────────────────────────────────────────
+
+// Returns: [{date, phase, nutrVal, outcomeVal}] for a given dimension+outcome
+// outcomeSource: 'cycle' (cycleLogs) or 'health' (healthLogs)
+function getCxPairs(nutrDimId, outcomeKey, phaseFilter, lagDays=0){
+  const pairs = [];
+  state.cycleLogs.forEach(cl=>{
+    if(phaseFilter && phaseFilter!=='any' && cl.phase!==phaseFilter) return;
+    const outcomeVal = outcomeKey==='pain'?cl.pain
+      :outcomeKey==='bloat'?cl.bloat
+      :outcomeKey==='mood'?cl.mood
+      :null;
+    // Also allow health log keys
+    const healthLog = state.healthLogs.find(h=>h.date===cl.date);
+    const hVal = healthLog ? healthLog[outcomeKey] : null;
+    const finalOutcome = outcomeVal!=null ? outcomeVal : hVal;
+    if(finalOutcome==null) return;
+
+    // Nutrition on (date - lagDays)
+    const nutrDate = lagDate(cl.date, lagDays);
+    const nl = state.nutritionLogs.find(n=>n.date===nutrDate);
+    if(!nl || nl[nutrDimId]==null) return;
+
+    pairs.push({
+      date: cl.date,
+      nutrDate,
+      phase: cl.phase,
+      nutrVal: nl[nutrDimId],
+      outcomeVal: finalOutcome,
+    });
+  });
+  return pairs;
+}
+
+function lagDate(dateStr, days){
+  const d = new Date(dateStr);
+  d.setDate(d.getDate()-days);
+  return dateStr_(d);
+}
+function dateStr_(d){ return d.toISOString().slice(0,10); }
+
+function avg(arr){ return arr.length>0 ? arr.reduce((a,b)=>a+b)/arr.length : null; }
+
+function confidenceLabel(n){
+  if(n>=10) return {cls:'confidence-high', text:'High confidence'};
+  if(n>=4)  return {cls:'confidence-med',  text:'Moderate confidence'};
+  return           {cls:'confidence-low',  text:'Low confidence (need more data)'};
+}
+
+// Split pairs into HIGH vs LOW intake groups by threshold
+function splitHighLow(pairs, threshold=5){
+  return {
+    high: pairs.filter(p=>p.nutrVal>=threshold),
+    low:  pairs.filter(p=>p.nutrVal<threshold),
+  };
+}
+
+// ── POPULATE DROPDOWNS ────────────────────────────────────────
+function populateCxDropdowns(){
+  const dims = getEnabledNutrition();
+  const dimOpts = dims.map(d=>`<option value="${d.id}">${d.icon} ${d.label}</option>`).join('');
+  ['cxNutrDim','elimDim','deepDim'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.innerHTML=dimOpts;
+  });
+}
+
+function renderCycleNutrPage(){
+  populateCxDropdowns();
+  renderCxOverview();
+  renderElimination();
+  renderDeepDive();
+}
+
+function switchCxTab(tab){
+  ['overview','heatmap','elimination','deep'].forEach(t=>{
+    document.getElementById('cxTab-'+t).style.display = t===tab?'':'none';
+  });
+  document.querySelectorAll('#page-cyclenutr .tab').forEach((el,i)=>{
+    el.classList.toggle('active',['overview','heatmap','elimination','deep'][i]===tab);
+  });
+  if(tab==='heatmap') renderCxHeatmap();
+}
+
+// ── TAB 1: PHASE OVERVIEW ─────────────────────────────────────
+function renderCxOverview(){
+  const outcome  = document.getElementById('cxOutcomeMetric')?.value||'pain';
+  const dimId    = document.getElementById('cxNutrDim')?.value||'histamine';
+  const dim      = getEnabledNutrition().find(d=>d.id===dimId);
+  const isInv    = ['pain','bloat','headache'].includes(outcome);
+  const outLabel = {pain:'Period Pain',bloat:'Bloating',mood:'Cycle Mood',sleep:'Sleep',energy:'Energy',headache:'Headache'}[outcome]||outcome;
+  const THRESH   = 5;
+
+  // Summary blocks
+  const allPairs = getCxPairs(dimId, outcome, 'any');
+  const {high:allHigh, low:allLow} = splitHighLow(allPairs, THRESH);
+  const avgH = avg(allHigh.map(p=>p.outcomeVal));
+  const avgL = avg(allLow.map(p=>p.outcomeVal));
+  const delta = avgH!=null && avgL!=null ? (isInv ? avgL-avgH : avgH-avgL) : null;
+
+  const summaryEl = document.getElementById('cxSummaryBlocks');
+  if(summaryEl){
+    const valColor = (v,inv) => v==null?'var(--text-dim)':inv?(v<=3?'var(--good)':v<=6?'var(--warn)':'var(--bad)'):(v>=7?'var(--good)':v>=4?'var(--warn)':'var(--bad)');
+    summaryEl.innerHTML = `
+      <div class="cx-summary-block">
+        <div class="cx-summary-label">High ${dim?.label||dimId} avg ${outLabel}</div>
+        <div class="cx-summary-val" style="color:${valColor(avgH,isInv)}">${avgH!=null?avgH.toFixed(1):'—'}</div>
+        <div class="cx-summary-sub">n=${allHigh.length} days</div>
+      </div>
+      <div class="cx-summary-block">
+        <div class="cx-summary-label">Low ${dim?.label||dimId} avg ${outLabel}</div>
+        <div class="cx-summary-val" style="color:${valColor(avgL,isInv)}">${avgL!=null?avgL.toFixed(1):'—'}</div>
+        <div class="cx-summary-sub">n=${allLow.length} days</div>
+      </div>
+      <div class="cx-summary-block">
+        <div class="cx-summary-label">Benefit of low intake</div>
+        <div class="cx-summary-val" style="color:${delta==null?'var(--text-dim)':delta>0?'var(--good)':delta<0?'var(--bad)':'var(--text-muted)'}">${delta!=null?(delta>0?'+':'')+delta.toFixed(1):'—'}</div>
+        <div class="cx-summary-sub">score difference</div>
+      </div>
+      <div class="cx-summary-block">
+        <div class="cx-summary-label">Total paired days</div>
+        <div class="cx-summary-val" style="color:var(--accent2)">${allPairs.length}</div>
+        <div class="cx-summary-sub">across all phases</div>
+      </div>`;
+  }
+
+  // Per-phase cards
+  const cardsEl = document.getElementById('cxOverviewCards');
+  if(!cardsEl) return;
+
+  if(allPairs.length===0){
+    cardsEl.innerHTML=`<div class="empty"><div class="empty-icon">🌸🥗</div>
+      <div class="empty-title">No paired data yet</div>
+      <div class="empty-sub">You need cycle logs and nutrition logs on the same dates to see phase analysis. Keep logging!</div></div>`;
+    return;
+  }
+
+  cardsEl.innerHTML = PHASES.map(phase=>{
+    const pairs  = getCxPairs(dimId, outcome, phase);
+    const {high,low} = splitHighLow(pairs, THRESH);
+    const aH = avg(high.map(p=>p.outcomeVal));
+    const aL = avg(low.map(p=>p.outcomeVal));
+    const d  = aH!=null&&aL!=null ? (isInv?aL-aH:aH-aL) : null;
+    const conf = confidenceLabel(pairs.length);
+    const color = PHASE_COLORS[phase];
+    if(pairs.length===0) return `
+      <div class="elim-card neutral">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <span class="phase-tag ${phase}">${PHASE_LABELS[phase]}</span>
+          <span style="font-size:12px;color:var(--text-dim)">No data yet</span>
+        </div>
+      </div>`;
+
+    const barMax = 10;
+    const pct = v => v!=null ? Math.round(v/barMax*100) : 0;
+    const barColor = (v,inv) => inv?(v<=3?'var(--good)':v<=6?'var(--warn)':'var(--bad)'):(v>=7?'var(--good)':v>=4?'var(--warn)':'var(--bad)');
+
+    const cardClass = d==null?'neutral':d>0.4?'good':d<-0.4?'bad':'neutral';
+    const insight = d==null?''
+      :d>0.5?`✦ Low ${dim?.label||dimId} in this phase associates with <strong>${d.toFixed(1)} better</strong> ${outLabel}`
+      :d<-0.5?`⚠ Low ${dim?.label||dimId} in this phase associates with <strong>${Math.abs(d).toFixed(1)} worse</strong> ${outLabel} — may not matter here`
+      :`No meaningful difference between high and low ${dim?.label||dimId} in this phase`;
+
+    return `<div class="elim-card ${cardClass}" style="margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+        <span class="phase-tag ${phase}">${PHASE_LABELS[phase]}</span>
+        <span style="font-size:12px;color:var(--text-muted)">${pairs.length} logged day${pairs.length!==1?'s':''}</span>
+        <span style="font-size:11px;margin-left:auto;"><span class="confidence-dot ${conf.cls}"></span>${conf.text}</span>
+      </div>
+
+      <div style="margin-bottom:10px;">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px;">
+          Avg ${outLabel} — high vs low ${dim?.label||dimId}
+        </div>
+        <div class="window-bar">
+          <div class="window-label" style="font-size:11px;">High ≥5 (n=${high.length})</div>
+          <div class="window-wrap"><div class="window-fill" style="width:${pct(aH)}%;background:${barColor(aH,isInv)}"></div></div>
+          <div class="window-val" style="color:${barColor(aH,isInv)}">${aH!=null?aH.toFixed(1):'—'}</div>
+        </div>
+        <div class="window-bar">
+          <div class="window-label" style="font-size:11px;">Low &lt;5 (n=${low.length})</div>
+          <div class="window-wrap"><div class="window-fill" style="width:${pct(aL)}%;background:${barColor(aL,isInv)}"></div></div>
+          <div class="window-val" style="color:${barColor(aL,isInv)}">${aL!=null?aL.toFixed(1):'—'}</div>
+        </div>
+      </div>
+      ${insight?`<div style="font-size:12px;padding:8px 10px;background:var(--surface2);border-radius:6px;">${insight}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ── TAB 2: PHASE × FOOD HEATMAP ──────────────────────────────
+function renderCxHeatmap(){
+  const outcome = document.getElementById('cxHmOutcome')?.value||'pain';
+  const thresh  = parseInt(document.getElementById('cxHmThresh')?.value||'6');
+  const dims    = getEnabledNutrition();
+  const isInv   = ['pain','bloat','headache'].includes(outcome);
+  const table   = document.getElementById('cxHeatmapTable');
+  if(!table) return;
+
+  const headCells = PHASES.map(p=>`<th><span class="phase-tag ${p}" style="font-size:10px;padding:2px 6px;">${PHASE_LABELS[p]}</span></th>`).join('');
+  let rows = `<tr><th class="row-label"></th>${headCells}</tr>`;
+
+  dims.forEach(d=>{
+    const cells = PHASES.map(phase=>{
+      const pairs = getCxPairs(d.id, outcome, phase);
+      const high  = pairs.filter(p=>p.nutrVal>=thresh);
+      const low   = pairs.filter(p=>p.nutrVal<thresh);
+      if(high.length<2 && low.length<2) return `<td style="background:var(--surface2);color:var(--text-dim);">—</td>`;
+      const aH = avg(high.map(p=>p.outcomeVal));
+      const aL = avg(low.map(p=>p.outcomeVal));
+      if(aH==null||aL==null){
+        const a = avg(pairs.map(p=>p.outcomeVal));
+        const c = a==null?'var(--text-dim)':isInv?(a<=3?'var(--good)':a<=6?'var(--warn)':'var(--bad)'):(a>=7?'var(--good)':a>=4?'var(--warn)':'var(--bad)');
+        return `<td style="color:${c}" title="Only ${pairs.length} pts, no split possible">${a!=null?a.toFixed(1):'—'}</td>`;
+      }
+      // delta = how much worse is HIGH vs LOW
+      const delta = isInv ? aH - aL : aL - aH; // positive = high food = worse outcome
+      const intensity = Math.min(Math.abs(delta)/3,1);
+      let bg;
+      if(delta>0.2) bg=`rgba(240,106,106,${0.12+intensity*0.45})`;      // red = high food = worse
+      else if(delta<-0.2) bg=`rgba(74,240,196,${0.12+intensity*0.45})`; // green = high food = better
+      else bg='var(--surface2)';
+      const sign = delta>0?'+':'';
+      const title = `High ${d.label} during ${phase}: avg ${outLabel(outcome)} ${aH.toFixed(1)} vs low ${aL.toFixed(1)}`;
+      return `<td style="background:${bg}" title="${title}">${aH.toFixed(1)}<br><span style="font-size:9px;color:var(--text-dim)">(n=${high.length})</span></td>`;
+    }).join('');
+    rows += `<tr><td class="row-label">${d.icon} ${d.label}</td>${cells}</tr>`;
+  });
+
+  table.innerHTML = rows;
+}
+
+function outLabel(key){
+  return {pain:'pain',bloat:'bloating',mood:'mood',sleep:'sleep',energy:'energy',headache:'headache'}[key]||key;
+}
+
+// ── TAB 3: ELIMINATION WINDOWS ────────────────────────────────
+function renderElimination(){
+  const dimId    = document.getElementById('elimDim')?.value||'histamine';
+  const phase    = document.getElementById('elimPhase')?.value||'luteal';
+  const minLen   = parseInt(document.getElementById('elimWindow')?.value||'5');
+  const dim      = getEnabledNutrition().find(d=>d.id===dimId);
+  const container= document.getElementById('elimContainer');
+  if(!container) return;
+  const LOW_THRESH = 3;
+
+  // Find all consecutive-low streaks in this phase
+  // A streak = N or more consecutive days where nutrVal<=LOW_THRESH AND cyclelog.phase===phase
+  const sorted = [...state.cycleLogs]
+    .filter(cl=>phase==='any'||cl.phase===phase)
+    .sort((a,b)=>a.date.localeCompare(b.date));
+
+  // Build day list with nutrition data
+  const days = sorted.map(cl=>{
+    const nl = state.nutritionLogs.find(n=>n.date===cl.date);
+    return {
+      date: cl.date,
+      phase: cl.phase,
+      nutrVal: nl?.[dimId]??null,
+      pain: cl.pain,
+      bloat: cl.bloat,
+      mood: cl.mood,
+    };
+  });
+
+  // Extract streaks
+  const streaks = [];
+  let cur = [];
+  days.forEach((d,i)=>{
+    if(d.nutrVal!=null && d.nutrVal<=LOW_THRESH){
+      cur.push(d);
+    } else {
+      if(cur.length>=minLen) streaks.push([...cur]);
+      cur=[];
+    }
+    if(i===days.length-1 && cur.length>=minLen) streaks.push([...cur]);
+  });
+
+  if(days.length===0){
+    container.innerHTML=`<div class="empty"><div class="empty-icon">📅</div>
+      <div class="empty-title">No ${PHASE_LABELS[phase]||phase} cycle logs</div>
+      <div class="empty-sub">Log your cycle phases to enable elimination analysis</div></div>`;
+    return;
+  }
+
+  // Overall comparison: days within a qualifying streak vs days not
+  const inStreak=[], outStreak=[];
+  const streakDates = new Set(streaks.flatMap(s=>s.map(d=>d.date)));
+  days.forEach(d=>{
+    if(d.pain==null) return;
+    if(streakDates.has(d.date)) inStreak.push(d.pain);
+    else outStreak.push(d.pain);
+  });
+
+  const avgIn  = avg(inStreak);
+  const avgOut = avg(outStreak);
+  const delta  = avgIn!=null&&avgOut!=null ? avgOut-avgIn : null; // positive = lower pain during streak
+
+  let html = '';
+
+  // Summary finding
+  if(streaks.length>0 && delta!=null){
+    const benefit = delta>0.3;
+    const harm    = delta<-0.3;
+    html += `<div class="elim-card ${benefit?'good':harm?'bad':'neutral'}" style="margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+        <span style="font-size:16px">${benefit?'✦':harm?'⚠':'○'}</span>
+        <strong style="font-size:14px;">${minLen}+ day low-${dim?.label||dimId} streaks found: ${streaks.length}</strong>
+        <span class="phase-tag ${phase==='any'?'follicular':phase}">${PHASE_LABELS[phase]||'Any phase'}</span>
+      </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px;">
+        <div>
+          <div style="font-size:11px;color:var(--text-muted)">During low streak — avg pain</div>
+          <div style="font-family:'DM Mono',monospace;font-size:22px;color:${avgIn<=4?'var(--good)':avgIn<=6?'var(--warn)':'var(--bad)'}">${avgIn!=null?avgIn.toFixed(1):'—'}<span style="font-size:12px;color:var(--text-muted)">/10 (n=${inStreak.length})</span></div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-muted)">Outside low streak — avg pain</div>
+          <div style="font-family:'DM Mono',monospace;font-size:22px;color:${avgOut<=4?'var(--good)':avgOut<=6?'var(--warn)':'var(--bad)'}">${avgOut!=null?avgOut.toFixed(1):'—'}<span style="font-size:12px;color:var(--text-muted)">/10 (n=${outStreak.length})</span></div>
+        </div>
+      </div>
+      <div style="font-size:13px;padding:10px;background:var(--surface2);border-radius:8px;line-height:1.6;">
+        ${benefit
+          ? `<strong>Keeping ${dim?.label||dimId} low for ${minLen}+ consecutive days in the ${PHASE_LABELS[phase]||'selected'} phase associates with ${delta.toFixed(1)} less period pain</strong> on average. This is your strongest dietary signal for this phase.`
+          : harm
+          ? `Low ${dim?.label||dimId} streaks in this phase don't appear to reduce pain — in fact pain may be slightly higher. Other factors may dominate here.`
+          : `No clear pain reduction from ${minLen}+ day low-${dim?.label||dimId} periods in this phase. Try a different food dimension or phase.`
+        }
+      </div>
+    </div>`;
+  } else if(streaks.length===0){
+    html += `<div class="notice notice-warn"><span>○</span><span>No ${minLen}+ day low-${dim?.label||dimId} streaks found in the ${PHASE_LABELS[phase]||'selected'} phase. Either you haven't had consistent low intake periods, or there isn't enough logged data yet.</span></div>`;
+  }
+
+  // Show individual streaks
+  if(streaks.length>0){
+    html += `<div class="card-title" style="font-family:'DM Serif Display',serif;font-size:16px;margin-bottom:12px;">Individual Streaks</div>`;
+    html += streaks.map((streak,si)=>{
+      const pains = streak.map(d=>d.pain).filter(v=>v!=null);
+      const avgP  = avg(pains);
+      const {cls} = confidenceLabel(streak.length);
+
+      // Visual streak dots — colour by nutrition level
+      const dots = streak.map(d=>{
+        const v = d.nutrVal;
+        const bg = v===null?'var(--border)':v<=2?'var(--good)':v<=4?'#a0f0d0':'var(--warn)';
+        return `<div class="streak-dot" style="background:${bg}" title="${d.date}: ${v??'?'}/10"></div>`;
+      }).join('');
+
+      return `<div class="elim-card ${avgP!=null&&avgP<=4?'good':avgP!=null&&avgP>=7?'bad':'neutral'}">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
+          <strong style="font-size:13px;">Streak ${si+1} — ${streak.length} days</strong>
+          <span style="font-size:11px;color:var(--text-muted)">${streak[0].date} → ${streak[streak.length-1].date}</span>
+          <span class="confidence-dot ${cls}"></span>
+        </div>
+        <div class="streak-vis">${dots}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Dot colour: 🟢 very low → 🟡 low</div>
+        ${avgP!=null?`<div style="font-size:13px;margin-top:6px;">Avg period pain during streak: <strong style="color:${avgP<=4?'var(--good)':avgP<=6?'var(--warn)':'var(--bad)'}">${avgP.toFixed(1)}/10</strong> (n=${pains.length})</div>`:'<div style="font-size:12px;color:var(--text-dim)">No pain data during this streak</div>'}
+      </div>`;
+    }).join('');
+  }
+
+  container.innerHTML = html || '<div class="empty"><div class="empty-icon">📊</div><div class="empty-title">Not enough data yet</div><div class="empty-sub">Log nutrition and cycle data consistently to enable this analysis</div></div>';
+}
+
+// ── TAB 4: DEEP DIVE ──────────────────────────────────────────
+let _deepChart = null;
+function renderDeepDive(){
+  const phase   = document.getElementById('deepPhase')?.value||'luteal';
+  const dimId   = document.getElementById('deepDim')?.value||'histamine';
+  const outcome = document.getElementById('deepOutcome')?.value||'pain';
+  const dim     = getEnabledNutrition().find(d=>d.id===dimId);
+  const isInv   = ['pain','bloat','headache'].includes(outcome);
+
+  const pairs = getCxPairs(dimId, outcome, phase);
+  const ctx   = document.getElementById('deepDiveChart');
+  const sumEl = document.getElementById('deepDiveSummary');
+
+  if(_deepChart){ _deepChart.destroy(); _deepChart=null; }
+
+  if(pairs.length<3){
+    if(ctx) ctx.getContext('2d').clearRect(0,0,ctx.width,ctx.height);
+    if(sumEl) sumEl.innerHTML=`<div class="notice notice-muted"><span>○</span><span>Need at least 3 paired days of ${PHASE_LABELS[phase]||phase} cycle logs + nutrition logs. Keep logging!</span></div>`;
+    return;
+  }
+
+  // Scatter chart
+  if(ctx){
+    const color = PHASE_COLORS[phase]||'#7c6af7';
+    _deepChart = new Chart(ctx,{
+      type:'scatter',
+      data:{datasets:[{
+        label:`${dim?.icon||''} ${dim?.label||dimId} vs ${outLabel(outcome)} (${PHASE_LABELS[phase]||phase})`,
+        data: pairs.map(p=>({x:p.nutrVal, y:p.outcomeVal})),
+        backgroundColor: color+'90',
+        borderColor: color,
+        pointRadius: 7,
+        pointHoverRadius: 9,
+      }]},
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{labels:{color:'#7a8ba3',font:{family:'Outfit',size:11}}}},
+        scales:{
+          x:{min:1,max:10,title:{display:true,text:`${dim?.label||dimId} intake (1=low, 10=high)`,color:'#7a8ba3'},ticks:{color:'#7a8ba3'},grid:{color:'#2a3444'}},
+          y:{min:0,max:10,title:{display:true,text:outLabel(outcome)+' (1–10)',color:'#7a8ba3'},ticks:{color:'#7a8ba3'},grid:{color:'#2a3444'}},
+        }
+      }
+    });
+  }
+
+  // Stats
+  const xs = pairs.map(p=>p.nutrVal), ys = pairs.map(p=>p.outcomeVal);
+  const r  = pearson(xs,ys);
+  const {high,low} = splitHighLow(pairs,5);
+  const aH = avg(high.map(p=>p.outcomeVal));
+  const aL = avg(low.map(p=>p.outcomeVal));
+  const delta = aH!=null&&aL!=null ? (isInv?aL-aH:aH-aL) : null;
+  const conf  = confidenceLabel(pairs.length);
+  const rDir  = r>0?'positive':'negative';
+  const benefit = isInv?(r<-0.2):(r>0.2);
+  const harm    = isInv?(r>0.2):(r<-0.2);
+
+  const strengthLabel = r==null?'—':Math.abs(r)>=0.6?'Strong':Math.abs(r)>=0.35?'Moderate':Math.abs(r)>=0.15?'Weak':'Negligible';
+
+  if(sumEl) sumEl.innerHTML=`
+    <div class="elim-card ${benefit?'good':harm?'bad':'neutral'}">
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px;">
+        <div><div style="font-size:11px;color:var(--text-muted)">Pearson r</div><div style="font-family:'DM Mono',monospace;font-size:22px;color:${r==null?'var(--text-dim)':benefit?'var(--good)':harm?'var(--bad)':'var(--text-muted)'}">${r!=null?r.toFixed(3):'—'}</div><div style="font-size:11px;color:var(--text-muted)">${strengthLabel} ${rDir}</div></div>
+        <div><div style="font-size:11px;color:var(--text-muted)">High intake avg</div><div style="font-family:'DM Mono',monospace;font-size:22px;color:${aH==null?'var(--text-dim)':isInv?(aH<=4?'var(--good)':aH<=6?'var(--warn)':'var(--bad)'):(aH>=6?'var(--good)':aH>=4?'var(--warn)':'var(--bad)')}">${aH!=null?aH.toFixed(1):'—'}</div><div style="font-size:11px;color:var(--text-muted)">n=${high.length}</div></div>
+        <div><div style="font-size:11px;color:var(--text-muted)">Low intake avg</div><div style="font-family:'DM Mono',monospace;font-size:22px;color:${aL==null?'var(--text-dim)':isInv?(aL<=4?'var(--good)':aL<=6?'var(--warn)':'var(--bad)'):(aL>=6?'var(--good)':aL>=4?'var(--warn)':'var(--bad)')}">${aL!=null?aL.toFixed(1):'—'}</div><div style="font-size:11px;color:var(--text-muted)">n=${low.length}</div></div>
+        <div><div style="font-size:11px;color:var(--text-muted)">Benefit of low</div><div style="font-family:'DM Mono',monospace;font-size:22px;color:${delta==null?'var(--text-dim)':delta>0?'var(--good)':delta<0?'var(--bad)':'var(--text-muted)'}">${delta!=null?(delta>0?'+':'')+delta.toFixed(1):'—'}</div><div style="font-size:11px;color:var(--text-muted)">score points</div></div>
+      </div>
+      <div style="padding:10px;background:var(--surface2);border-radius:8px;font-size:13px;line-height:1.6;margin-bottom:8px;">
+        <span class="confidence-dot ${conf.cls}"></span>${conf.text} — ${pairs.length} paired observations in ${PHASE_LABELS[phase]||phase} phase.<br>
+        ${r!=null&&Math.abs(r)>=0.2
+          ? `${strengthLabel} ${rDir} correlation between ${dim?.label||dimId} and ${outLabel(outcome)}. ${
+              benefit
+                ? `Lower ${dim?.label||dimId} intake tends to associate with better ${outLabel(outcome)} during this phase.`
+                : `Higher ${dim?.label||dimId} intake tends to associate with better ${outLabel(outcome)} during this phase — this may be a beneficial nutrient for you here.`
+            }`
+          : `No meaningful correlation between ${dim?.label||dimId} and ${outLabel(outcome)} in this phase. This food dimension may not be relevant here.`
+        }
+      </div>
+      <div style="font-size:11px;color:var(--text-dim);">⚠ Correlation is not causation. These are personal observational patterns, not medical conclusions. Sample sizes may be small — interpret with caution.</div>
+    </div>`;
+}
+
+// ── SURFACE CX INSIGHTS IN AI INSIGHTS ───────────────────────
+
+
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 }
@@ -2009,6 +3273,131 @@ window.addEventListener('beforeinstallprompt',e=>{
 function doInstall(){if(!_pwaEvt)return;_pwaEvt.prompt();_pwaEvt.userChoice.then(()=>{ib.classList.remove('show');_pwaEvt=null;});}
 function dismissInstall(){ib.classList.remove('show');localStorage.setItem('wb_dismiss','1');}
 window.addEventListener('appinstalled',()=>{ib.classList.remove('show');showToast('Well-bee installed! 🐝');});
+init();
 </script>
+
+
+<div id="offlineBanner">📵 Offline — your data is still safe</div>
+<div id="navBackdrop" onclick="closeNav()"></div>
+<div id="navDrawer">
+  <div class="nd-head">
+    <span class="nd-logo">🐝 Well-bee</span>
+    <button class="nd-close" onclick="closeNav()">✕</button>
+  </div>
+  <div class="nd-streak">
+    <div class="nd-streak-num" id="drawerStreak">0</div>
+    <div class="nd-streak-lbl">🔥 Day Streak</div>
+  </div>
+  <nav style="padding:6px;">
+    <div class="nd-section">Overview</div>
+    <button class="nd-item active" data-page="dashboard" onclick="goTo('dashboard')"><span class="ni">⬡</span>Dashboard</button>
+    <button class="nd-item" data-page="log" onclick="goTo('log')"><span class="ni">＋</span>Log Entry</button>
+    <div class="nd-section">Tracking</div>
+    <button class="nd-item" data-page="substances" onclick="goTo('substances')"><span class="ni">💊</span>Substances</button>
+    <button class="nd-item" data-page="history" onclick="goTo('history')"><span class="ni">📋</span>Intake History</button>
+    <button class="nd-item" data-page="health" onclick="goTo('health')"><span class="ni">🩺</span>Health Logs</button>
+    <button class="nd-item" data-page="cycle" onclick="goTo('cycle')"><span class="ni">🌸</span>Cycle Tracker</button>
+    <button class="nd-item" data-page="nutrition" onclick="goTo('nutrition')"><span class="ni">🥗</span>Nutrition</button>
+    <div class="nd-section">Analysis</div>
+    <button class="nd-item" data-page="charts" onclick="goTo('charts')"><span class="ni">📈</span>Charts</button>
+    <button class="nd-item" data-page="correlations" onclick="goTo('correlations')"><span class="ni">🔗</span>Correlations</button>
+    <button class="nd-item" data-page="delayed" onclick="goTo('delayed')"><span class="ni">⏱</span>Delayed Effects</button>
+    <button class="nd-item" data-page="interactions" onclick="goTo('interactions')"><span class="ni">⚗️</span>Interactions</button>
+    <button class="nd-item" data-page="cyclenutr" onclick="goTo('cyclenutr')"><span class="ni">🌸🥗</span>Cycle × Food</button>
+    <button class="nd-item" data-page="insights" onclick="goTo('insights')"><span class="ni">✦</span>AI Insights</button>
+    <div class="nd-section">System</div>
+    <button class="nd-item" data-page="settings" onclick="goTo('settings')"><span class="ni">⚙</span>Settings</button>
+  </nav>
+</div>
+<nav id="bottomTabs">
+  <button class="btab on" data-page="dashboard" onclick="goTo('dashboard')"><span class="bi">⬡</span>Home</button>
+  <button class="btab" data-page="log" onclick="goTo('log')"><span class="bi">＋</span>Log</button>
+  <button class="btab" data-page="cycle" onclick="goTo('cycle')"><span class="bi">🌸</span>Cycle</button>
+  <button class="btab" data-page="nutrition" onclick="goTo('nutrition')"><span class="bi">🥗</span>Food</button>
+  <button class="btab" onclick="openNav()"><span class="bi">☰</span>More</button>
+</nav>
+<div id="installBanner">
+  <div class="ib-icon">🐝</div>
+  <div class="ib-text">
+    <div class="ib-title">Install Well-bee</div>
+    <div class="ib-sub">Add to home screen — works offline</div>
+  </div>
+  <div class="ib-btns">
+    <button class="btn btn-ghost btn-sm" onclick="dismissInstall()">Later</button>
+    <button class="btn btn-primary btn-sm" onclick="doInstall()">Install</button>
+  </div>
+</div>
+
+
+<!-- INTERACTION RULE MODAL -->
+<div class="modal-overlay" id="ruleModal">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="ruleModalTitle">Add Interaction Note</span>
+      <button class="modal-close" onclick="closeModal('ruleModal')">✕</button>
+    </div>
+    <div class="notice notice-warn">
+      <span>⚠</span>
+      <span>These are personal notes only — not medical advice. Consult a healthcare professional for clinical guidance.</span>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Substance A</label>
+        <select class="form-select" id="ruleSubA"><option value="">Select</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Substance B (optional)</label>
+        <select class="form-select" id="ruleSubB"><option value="">Any / General</option></select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Interaction Type</label>
+      <select class="form-select" id="ruleType">
+        <option value="synergy">✅ Synergy — take together, enhances effect</option>
+        <option value="antagonism">⚠ Antagonism — reduces each other's effect</option>
+        <option value="timing">⏱ Timing — separate by time for best effect</option>
+        <option value="warning">🚫 Warning — avoid combination</option>
+        <option value="note">📝 General note</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Recommended Timing Gap</label>
+      <select class="form-select" id="ruleTiming">
+        <option value="">No specific timing</option>
+        <option value="30min">30 minutes apart</option>
+        <option value="1h">1 hour apart</option>
+        <option value="2h">2 hours apart</option>
+        <option value="4h">4 hours apart</option>
+        <option value="morning_evening">A morning / B evening</option>
+        <option value="together">Take together</option>
+        <option value="food">Take with food</option>
+        <option value="empty">Take on empty stomach</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Effect on Health Metrics</label>
+      <div id="ruleMetricEffect" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes / Description</label>
+      <textarea class="form-textarea" id="ruleNotes" placeholder="Describe the interaction, source, personal experience..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Source</label>
+      <select class="form-select" id="ruleSource">
+        <option value="personal">Personal observation</option>
+        <option value="research">Research / literature</option>
+        <option value="doctor">Healthcare provider</option>
+        <option value="community">Community / forum</option>
+      </select>
+    </div>
+    <input type="hidden" id="ruleEditId">
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('ruleModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveRule()">Save Note</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
