@@ -809,7 +809,7 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;hei
       <div class="card nutrition-card">
         <div class="card-title">Nutrition Profile Over Time</div>
         <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-          <select class="form-select" id="nutritionChartMetric" style="width:200px" onchange="renderNutritionChart()"></select>
+          <select class="form-select" id="nutritionChartMetric" style="width:200px" onchange="renderNutritionLineChart()"></select>
         </div>
         <div class="chart-wrap" style="height:260px"><canvas id="nutritionLineChart"></canvas></div>
       </div>
@@ -1187,6 +1187,132 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;hei
 </div>
 
 <div id="toast"></div>
+
+
+
+
+<div id="offlineBanner">📵 Offline — your data is still safe</div>
+<div id="navBackdrop" onclick="closeNav()"></div>
+<div id="navDrawer">
+  <div class="nd-head">
+    <span class="nd-logo">🐝 Well-bee</span>
+    <button class="nd-close" onclick="closeNav()">✕</button>
+  </div>
+  <div class="nd-streak">
+    <div class="nd-streak-num" id="drawerStreak">0</div>
+    <div class="nd-streak-lbl">🔥 Day Streak</div>
+  </div>
+  <nav style="padding:6px;">
+    <div class="nd-section">Overview</div>
+    <button class="nd-item active" data-page="dashboard" onclick="goTo('dashboard')"><span class="ni">⬡</span>Dashboard</button>
+    <button class="nd-item" data-page="log" onclick="goTo('log')"><span class="ni">＋</span>Log Entry</button>
+    <div class="nd-section">Tracking</div>
+    <button class="nd-item" data-page="substances" onclick="goTo('substances')"><span class="ni">💊</span>Substances</button>
+    <button class="nd-item" data-page="history" onclick="goTo('history')"><span class="ni">📋</span>Intake History</button>
+    <button class="nd-item" data-page="health" onclick="goTo('health')"><span class="ni">🩺</span>Health Logs</button>
+    <button class="nd-item" data-page="cycle" onclick="goTo('cycle')"><span class="ni">🌸</span>Cycle Tracker</button>
+    <button class="nd-item" data-page="nutrition" onclick="goTo('nutrition')"><span class="ni">🥗</span>Nutrition</button>
+    <div class="nd-section">Analysis</div>
+    <button class="nd-item" data-page="charts" onclick="goTo('charts')"><span class="ni">📈</span>Charts</button>
+    <button class="nd-item" data-page="correlations" onclick="goTo('correlations')"><span class="ni">🔗</span>Correlations</button>
+    <button class="nd-item" data-page="delayed" onclick="goTo('delayed')"><span class="ni">⏱</span>Delayed Effects</button>
+    <button class="nd-item" data-page="interactions" onclick="goTo('interactions')"><span class="ni">⚗️</span>Interactions</button>
+    <button class="nd-item" data-page="cyclenutr" onclick="goTo('cyclenutr')"><span class="ni">🌸🥗</span>Cycle × Food</button>
+    <button class="nd-item" data-page="insights" onclick="goTo('insights')"><span class="ni">✦</span>AI Insights</button>
+    <div class="nd-section">System</div>
+    <button class="nd-item" data-page="settings" onclick="goTo('settings')"><span class="ni">⚙</span>Settings</button>
+  </nav>
+</div>
+<nav id="bottomTabs">
+  <button class="btab on" data-page="dashboard" onclick="goTo('dashboard')"><span class="bi">⬡</span>Home</button>
+  <button class="btab" data-page="log" onclick="goTo('log')"><span class="bi">＋</span>Log</button>
+  <button class="btab" data-page="cycle" onclick="goTo('cycle')"><span class="bi">🌸</span>Cycle</button>
+  <button class="btab" data-page="nutrition" onclick="goTo('nutrition')"><span class="bi">🥗</span>Food</button>
+  <button class="btab" onclick="openNav()"><span class="bi">☰</span>More</button>
+</nav>
+<div id="installBanner">
+  <div class="ib-icon">🐝</div>
+  <div class="ib-text">
+    <div class="ib-title">Install Well-bee</div>
+    <div class="ib-sub">Add to home screen — works offline</div>
+  </div>
+  <div class="ib-btns">
+    <button class="btn btn-ghost btn-sm" onclick="dismissInstall()">Later</button>
+    <button class="btn btn-primary btn-sm" onclick="doInstall()">Install</button>
+  </div>
+</div>
+
+
+<!-- INTERACTION RULE MODAL -->
+<div class="modal-overlay" id="ruleModal">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="ruleModalTitle">Add Interaction Note</span>
+      <button class="modal-close" onclick="closeModal('ruleModal')">✕</button>
+    </div>
+    <div class="notice notice-warn">
+      <span>⚠</span>
+      <span>These are personal notes only — not medical advice. Consult a healthcare professional for clinical guidance.</span>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Substance A</label>
+        <select class="form-select" id="ruleSubA"><option value="">Select</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Substance B (optional)</label>
+        <select class="form-select" id="ruleSubB"><option value="">Any / General</option></select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Interaction Type</label>
+      <select class="form-select" id="ruleType">
+        <option value="synergy">✅ Synergy — take together, enhances effect</option>
+        <option value="antagonism">⚠ Antagonism — reduces each other's effect</option>
+        <option value="timing">⏱ Timing — separate by time for best effect</option>
+        <option value="warning">🚫 Warning — avoid combination</option>
+        <option value="note">📝 General note</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Recommended Timing Gap</label>
+      <select class="form-select" id="ruleTiming">
+        <option value="">No specific timing</option>
+        <option value="30min">30 minutes apart</option>
+        <option value="1h">1 hour apart</option>
+        <option value="2h">2 hours apart</option>
+        <option value="4h">4 hours apart</option>
+        <option value="morning_evening">A morning / B evening</option>
+        <option value="together">Take together</option>
+        <option value="food">Take with food</option>
+        <option value="empty">Take on empty stomach</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Effect on Health Metrics</label>
+      <div id="ruleMetricEffect" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes / Description</label>
+      <textarea class="form-textarea" id="ruleNotes" placeholder="Describe the interaction, source, personal experience..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Source</label>
+      <select class="form-select" id="ruleSource">
+        <option value="personal">Personal observation</option>
+        <option value="research">Research / literature</option>
+        <option value="doctor">Healthcare provider</option>
+        <option value="community">Community / forum</option>
+      </select>
+    </div>
+    <input type="hidden" id="ruleEditId">
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('ruleModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveRule()">Save Note</button>
+    </div>
+  </div>
+</div>
+
 
 <script>
 // =============================================================
@@ -2463,8 +2589,8 @@ function renderCombos(){
       <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px">${metric?.icon} ${metric?.label} — avg scores by condition</div>
       <div class="combo-vs">
         ${vsBlock('Both together', both.avg, both.n, true)}
-        ${vsBlock('${a.name.split(' ')[0]} only', aOnly.avg, aOnly.n, false)}
-        ${vsBlock('${b.name.split(' ')[0]} only', bOnly.avg, bOnly.n, false)}
+        ${vsBlock(a.name.split(' ')[0]+' only', aOnly.avg, aOnly.n, false)}
+        ${vsBlock(b.name.split(' ')[0]+' only', bOnly.avg, bOnly.n, false)}
         ${vsBlock('Neither', neither.avg, neither.n, false)}
       </div>
       ${comboBetter?`<div style="margin-top:10px;font-size:12px;color:var(--good)">✦ Taking these together associates with better ${metric?.label}</div>`:''}
@@ -3261,143 +3387,18 @@ function goTo(id){
   const ds=document.getElementById('drawerStreak'),ms=document.getElementById('streakNum');
   if(ds&&ms)ds.textContent=ms.textContent;
 }
-const ob=document.getElementById('offlineBanner');
-function chkOnline(){ob.style.display=navigator.onLine?'none':'block';}
+function chkOnline(){const ob=document.getElementById('offlineBanner');if(ob)ob.style.display=navigator.onLine?'none':'block';}
 window.addEventListener('online',chkOnline);window.addEventListener('offline',chkOnline);chkOnline();
 let _pwaEvt=null;
-const ib=document.getElementById('installBanner');
+// installBanner accessed lazily below
 window.addEventListener('beforeinstallprompt',e=>{
   e.preventDefault();_pwaEvt=e;
-  if(!localStorage.getItem('wb_dismiss'))setTimeout(()=>ib.classList.add('show'),3500);
+  if(!localStorage.getItem('wb_dismiss'))setTimeout(()=>{const ib=document.getElementById('installBanner');if(ib)ib.classList.add('show');},3500);
 });
-function doInstall(){if(!_pwaEvt)return;_pwaEvt.prompt();_pwaEvt.userChoice.then(()=>{ib.classList.remove('show');_pwaEvt=null;});}
-function dismissInstall(){ib.classList.remove('show');localStorage.setItem('wb_dismiss','1');}
-window.addEventListener('appinstalled',()=>{ib.classList.remove('show');showToast('Well-bee installed! 🐝');});
+function doInstall(){const ib=document.getElementById('installBanner');if(!_pwaEvt)return;_pwaEvt.prompt();_pwaEvt.userChoice.then(()=>{if(ib)ib.classList.remove('show');_pwaEvt=null;});}
+function dismissInstall(){const ib=document.getElementById('installBanner');if(ib)ib.classList.remove('show');localStorage.setItem('wb_dismiss','1');}
+window.addEventListener('appinstalled',()=>{const ib=document.getElementById('installBanner');if(ib)ib.classList.remove('show');showToast('Well-bee installed! 🐝');});
 init();
 </script>
-
-
-<div id="offlineBanner">📵 Offline — your data is still safe</div>
-<div id="navBackdrop" onclick="closeNav()"></div>
-<div id="navDrawer">
-  <div class="nd-head">
-    <span class="nd-logo">🐝 Well-bee</span>
-    <button class="nd-close" onclick="closeNav()">✕</button>
-  </div>
-  <div class="nd-streak">
-    <div class="nd-streak-num" id="drawerStreak">0</div>
-    <div class="nd-streak-lbl">🔥 Day Streak</div>
-  </div>
-  <nav style="padding:6px;">
-    <div class="nd-section">Overview</div>
-    <button class="nd-item active" data-page="dashboard" onclick="goTo('dashboard')"><span class="ni">⬡</span>Dashboard</button>
-    <button class="nd-item" data-page="log" onclick="goTo('log')"><span class="ni">＋</span>Log Entry</button>
-    <div class="nd-section">Tracking</div>
-    <button class="nd-item" data-page="substances" onclick="goTo('substances')"><span class="ni">💊</span>Substances</button>
-    <button class="nd-item" data-page="history" onclick="goTo('history')"><span class="ni">📋</span>Intake History</button>
-    <button class="nd-item" data-page="health" onclick="goTo('health')"><span class="ni">🩺</span>Health Logs</button>
-    <button class="nd-item" data-page="cycle" onclick="goTo('cycle')"><span class="ni">🌸</span>Cycle Tracker</button>
-    <button class="nd-item" data-page="nutrition" onclick="goTo('nutrition')"><span class="ni">🥗</span>Nutrition</button>
-    <div class="nd-section">Analysis</div>
-    <button class="nd-item" data-page="charts" onclick="goTo('charts')"><span class="ni">📈</span>Charts</button>
-    <button class="nd-item" data-page="correlations" onclick="goTo('correlations')"><span class="ni">🔗</span>Correlations</button>
-    <button class="nd-item" data-page="delayed" onclick="goTo('delayed')"><span class="ni">⏱</span>Delayed Effects</button>
-    <button class="nd-item" data-page="interactions" onclick="goTo('interactions')"><span class="ni">⚗️</span>Interactions</button>
-    <button class="nd-item" data-page="cyclenutr" onclick="goTo('cyclenutr')"><span class="ni">🌸🥗</span>Cycle × Food</button>
-    <button class="nd-item" data-page="insights" onclick="goTo('insights')"><span class="ni">✦</span>AI Insights</button>
-    <div class="nd-section">System</div>
-    <button class="nd-item" data-page="settings" onclick="goTo('settings')"><span class="ni">⚙</span>Settings</button>
-  </nav>
-</div>
-<nav id="bottomTabs">
-  <button class="btab on" data-page="dashboard" onclick="goTo('dashboard')"><span class="bi">⬡</span>Home</button>
-  <button class="btab" data-page="log" onclick="goTo('log')"><span class="bi">＋</span>Log</button>
-  <button class="btab" data-page="cycle" onclick="goTo('cycle')"><span class="bi">🌸</span>Cycle</button>
-  <button class="btab" data-page="nutrition" onclick="goTo('nutrition')"><span class="bi">🥗</span>Food</button>
-  <button class="btab" onclick="openNav()"><span class="bi">☰</span>More</button>
-</nav>
-<div id="installBanner">
-  <div class="ib-icon">🐝</div>
-  <div class="ib-text">
-    <div class="ib-title">Install Well-bee</div>
-    <div class="ib-sub">Add to home screen — works offline</div>
-  </div>
-  <div class="ib-btns">
-    <button class="btn btn-ghost btn-sm" onclick="dismissInstall()">Later</button>
-    <button class="btn btn-primary btn-sm" onclick="doInstall()">Install</button>
-  </div>
-</div>
-
-
-<!-- INTERACTION RULE MODAL -->
-<div class="modal-overlay" id="ruleModal">
-  <div class="modal">
-    <div class="modal-title">
-      <span id="ruleModalTitle">Add Interaction Note</span>
-      <button class="modal-close" onclick="closeModal('ruleModal')">✕</button>
-    </div>
-    <div class="notice notice-warn">
-      <span>⚠</span>
-      <span>These are personal notes only — not medical advice. Consult a healthcare professional for clinical guidance.</span>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Substance A</label>
-        <select class="form-select" id="ruleSubA"><option value="">Select</option></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Substance B (optional)</label>
-        <select class="form-select" id="ruleSubB"><option value="">Any / General</option></select>
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Interaction Type</label>
-      <select class="form-select" id="ruleType">
-        <option value="synergy">✅ Synergy — take together, enhances effect</option>
-        <option value="antagonism">⚠ Antagonism — reduces each other's effect</option>
-        <option value="timing">⏱ Timing — separate by time for best effect</option>
-        <option value="warning">🚫 Warning — avoid combination</option>
-        <option value="note">📝 General note</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Recommended Timing Gap</label>
-      <select class="form-select" id="ruleTiming">
-        <option value="">No specific timing</option>
-        <option value="30min">30 minutes apart</option>
-        <option value="1h">1 hour apart</option>
-        <option value="2h">2 hours apart</option>
-        <option value="4h">4 hours apart</option>
-        <option value="morning_evening">A morning / B evening</option>
-        <option value="together">Take together</option>
-        <option value="food">Take with food</option>
-        <option value="empty">Take on empty stomach</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Effect on Health Metrics</label>
-      <div id="ruleMetricEffect" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;"></div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Notes / Description</label>
-      <textarea class="form-textarea" id="ruleNotes" placeholder="Describe the interaction, source, personal experience..."></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Source</label>
-      <select class="form-select" id="ruleSource">
-        <option value="personal">Personal observation</option>
-        <option value="research">Research / literature</option>
-        <option value="doctor">Healthcare provider</option>
-        <option value="community">Community / forum</option>
-      </select>
-    </div>
-    <input type="hidden" id="ruleEditId">
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('ruleModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveRule()">Save Note</button>
-    </div>
-  </div>
-</div>
-
 </body>
 </html>
