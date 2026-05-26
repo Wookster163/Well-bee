@@ -421,6 +421,99 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;hei
 .confidence-med{background:var(--warn);}
 .confidence-low{background:var(--bad);}
 
+
+/* ═══════════════════ CYCLE GRID VIEW ════════════════════════ */
+.cycle-grid-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px;}
+.cycle-grid{border-collapse:collapse;font-size:11px;white-space:nowrap;background:var(--surface);}
+
+/* Sticky row label */
+.cg-label{
+  position:sticky;left:0;z-index:5;
+  background:var(--surface);
+  font-size:10px;color:var(--text-muted);
+  padding:3px 8px 3px 6px;
+  min-width:70px;max-width:70px;
+  border-right:2px solid var(--border);
+  font-weight:500;vertical-align:middle;
+  text-align:left;
+}
+.cg-label.group-header-label{
+  background:var(--surface2);color:var(--text-dim);
+  font-size:9px;text-transform:uppercase;letter-spacing:.8px;
+}
+
+/* Day number header */
+.cg-head{
+  min-width:30px;width:30px;max-width:30px;
+  text-align:center;vertical-align:bottom;
+  padding:4px 2px 3px;
+  font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);
+  border-bottom:2px solid var(--border);
+  background:var(--surface2);
+  position:sticky;top:0;z-index:4;
+}
+.cg-head.is-today{color:var(--accent);font-weight:700;}
+.cg-head.is-period{background:rgba(240,106,154,.12);color:var(--rose);}
+.cg-head.is-today.is-period{background:rgba(240,106,154,.2);}
+
+/* Data cell */
+.cg-cell{
+  min-width:30px;width:30px;max-width:30px;
+  height:28px;text-align:center;vertical-align:middle;
+  border-bottom:1px solid rgba(42,52,68,.35);
+  border-right:1px solid rgba(42,52,68,.15);
+  font-size:14px;line-height:1;cursor:default;
+}
+.cg-cell.is-today{background:rgba(74,240,196,.05);}
+.cg-cell.is-period{background:rgba(240,106,154,.05);}
+.cg-cell.is-today.is-period{background:rgba(240,106,154,.1);}
+
+/* Group separator row */
+.cg-group-row .cg-label,
+.cg-group-row .cg-cell{
+  height:18px;
+  background:var(--surface2)!important;
+  border-top:1px solid var(--border);
+  font-size:9px;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:.7px;
+}
+
+/* Cell content helpers */
+.cg-flow-1{color:#f06a9a;font-size:10px;} /* spotting */
+.cg-flow-2{color:#f06a9a;font-size:12px;} /* light */
+.cg-flow-3{color:#f06a9a;font-size:14px;} /* medium */
+.cg-flow-4{color:#e0307a;font-size:14px;} /* heavy */
+
+.cg-dot{
+  width:9px;height:9px;border-radius:50%;
+  display:inline-block;margin:0 auto;
+}
+.cg-bar-row{display:flex;align-items:flex-end;justify-content:center;height:20px;padding:4px 4px 1px;}
+.cg-bar{width:5px;border-radius:1px 1px 0 0;}
+
+.cg-pill{
+  display:inline-block;width:20px;height:7px;
+  border-radius:2px;vertical-align:middle;
+}
+.cg-taken{color:var(--accent);font-size:12px;}
+.cg-miss{color:var(--text-dim);font-size:9px;}
+.cg-num{font-family:'DM Mono',monospace;font-size:9px;color:var(--text-muted);}
+.cg-pain-num{font-family:'DM Mono',monospace;font-size:9px;}
+.cg-emoji{font-size:13px;}
+
+/* Grid nav */
+.grid-nav{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.grid-nav-btn{
+  background:var(--surface2);border:1px solid var(--border);
+  color:var(--text);width:30px;height:30px;border-radius:7px;
+  cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;
+  transition:all .1s;flex-shrink:0;
+}
+.grid-nav-btn:hover{border-color:var(--rose);color:var(--rose);}
+.grid-month-label{font-family:'DM Serif Display',serif;font-size:16px;min-width:120px;}
+.grid-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--text-muted);margin-top:10px;padding:8px 0;}
+.grid-legend-item{display:flex;align-items:center;gap:5px;}
+
 </style>
 </head>
 <body>
@@ -728,36 +821,89 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;hei
 
   <!-- ======== CYCLE TRACKER ======== -->
   <div class="page" id="page-cycle">
-    <div class="grid-2">
-      <div class="card rose-card">
-        <div class="card-title">🌸 Cycle Overview <span class="badge badge-rose" id="cycleCurrentPhase">—</span></div>
-        <div class="grid-2" style="margin-bottom:16px">
-          <div class="stat-card rose"><div class="stat-label">Cycle Day</div><div class="stat-value rose" id="cycle-day-full">—</div><div class="stat-delta">estimated</div></div>
-          <div class="stat-card red"><div class="stat-label">Avg Cycle</div><div class="stat-value red" id="cycle-avg-len">—</div><div class="stat-delta">days</div></div>
+    <div class="tabs">
+      <button class="tab rose-tab active" onclick="switchCyclePageTab('grid')">📊 Grid View</button>
+      <button class="tab rose-tab" onclick="switchCyclePageTab('overview')">🌸 Overview</button>
+      <button class="tab rose-tab" onclick="switchCyclePageTab('charts')">📈 Charts</button>
+      <button class="tab rose-tab" onclick="switchCyclePageTab('logs')">📋 Logs</button>
+    </div>
+
+    <!-- GRID VIEW TAB -->
+    <div id="cycleTab-grid">
+      <div class="card rose-card" style="padding:14px;">
+        <div class="grid-nav">
+          <button class="grid-nav-btn" onclick="shiftGridMonth(-1)">‹</button>
+          <div class="grid-month-label" id="gridMonthLabel">—</div>
+          <button class="grid-nav-btn" onclick="shiftGridMonth(1)">›</button>
+          <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;">
+            <label style="font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:5px;">
+              <input type="checkbox" id="gridShowSubstances" checked onchange="renderCycleGrid()" style="accent-color:var(--accent)"> Substances
+            </label>
+            <label style="font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:5px;">
+              <input type="checkbox" id="gridShowHealth" checked onchange="renderCycleGrid()" style="accent-color:var(--accent)"> Health
+            </label>
+            <label style="font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:5px;">
+              <input type="checkbox" id="gridShowNutrition" onchange="renderCycleGrid()" style="accent-color:var(--amber)"> Nutrition
+            </label>
+          </div>
         </div>
-        <div class="card-title" style="font-size:13px">Period Calendar — Last 3 Months</div>
-        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px">
-          <div class="cal-day-header">Mo</div><div class="cal-day-header">Tu</div><div class="cal-day-header">We</div>
-          <div class="cal-day-header">Th</div><div class="cal-day-header">Fr</div><div class="cal-day-header">Sa</div><div class="cal-day-header">Su</div>
+        <div class="cycle-grid-scroll">
+          <table class="cycle-grid" id="cycleGridTable"></table>
         </div>
-        <div class="cycle-calendar" id="fullCycleCalendar"></div>
-      </div>
-      <div class="card rose-card">
-        <div class="card-title">Pain & Flow Over Time</div>
-        <div class="chart-wrap" style="height:200px;margin-bottom:16px"><canvas id="cyclePainChart"></canvas></div>
-        <div class="card-title" style="font-size:13px">Symptom Frequency</div>
-        <div id="cycleSymptomStats"></div>
+        <div class="grid-legend">
+          <div class="grid-legend-item"><span style="color:var(--rose)">🩸</span> Period flow</div>
+          <div class="grid-legend-item"><span class="cg-dot" style="background:var(--bad)"></span> Pain high</div>
+          <div class="grid-legend-item"><span class="cg-dot" style="background:var(--good)"></span> Pain low</div>
+          <div class="grid-legend-item"><span class="cg-taken">✓</span> Taken</div>
+          <div class="grid-legend-item"><span class="cg-pill" style="background:var(--rose)"></span> Logged</div>
+          <div class="grid-legend-item"><span style="color:var(--accent);font-size:11px;">Today col</span></div>
+        </div>
       </div>
     </div>
-    <div class="card rose-card">
-      <div class="card-title">Period Logs</div>
-      <div style="overflow-x:auto">
-        <table class="data-table">
-          <thead><tr><th>Date</th><th>Phase</th><th>Flow</th><th>Pain</th><th>Bloating</th><th>Mood</th><th>Symptoms</th><th>Notes</th><th></th></tr></thead>
-          <tbody id="cycleLogsTable"></tbody>
-        </table>
+
+    <!-- OVERVIEW TAB -->
+    <div id="cycleTab-overview" style="display:none">
+      <div class="grid-2">
+        <div class="card rose-card">
+          <div class="card-title">🌸 Cycle Overview <span class="badge badge-rose" id="cycleCurrentPhase">—</span></div>
+          <div class="grid-2" style="margin-bottom:16px">
+            <div class="stat-card rose"><div class="stat-label">Cycle Day</div><div class="stat-value rose" id="cycle-day-full">—</div><div class="stat-delta">estimated</div></div>
+            <div class="stat-card red"><div class="stat-label">Avg Cycle</div><div class="stat-value red" id="cycle-avg-len">—</div><div class="stat-delta">days</div></div>
+          </div>
+          <div class="card-title" style="font-size:13px">Period Calendar — Last 3 Months</div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px">
+            <div class="cal-day-header">Mo</div><div class="cal-day-header">Tu</div><div class="cal-day-header">We</div>
+            <div class="cal-day-header">Th</div><div class="cal-day-header">Fr</div><div class="cal-day-header">Sa</div><div class="cal-day-header">Su</div>
+          </div>
+          <div class="cycle-calendar" id="fullCycleCalendar"></div>
+        </div>
+        <div class="card rose-card">
+          <div class="card-title">Symptom Frequency</div>
+          <div id="cycleSymptomStats"></div>
+        </div>
       </div>
-      <div id="cycleLogsEmpty" class="empty" style="display:none"><div class="empty-icon">🌸</div><div class="empty-title">No cycle logs yet</div><div class="empty-sub">Start tracking from Log Entry → Cycle & Health</div></div>
+    </div>
+
+    <!-- CHARTS TAB -->
+    <div id="cycleTab-charts" style="display:none">
+      <div class="card rose-card">
+        <div class="card-title">Pain & Flow Over Time</div>
+        <div class="chart-wrap" style="height:220px"><canvas id="cyclePainChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- LOGS TAB -->
+    <div id="cycleTab-logs" style="display:none">
+      <div class="card rose-card">
+        <div class="card-title">Period Logs</div>
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead><tr><th>Date</th><th>Phase</th><th>Flow</th><th>Pain</th><th>Bloating</th><th>Mood</th><th>Symptoms</th><th>Notes</th><th></th></tr></thead>
+            <tbody id="cycleLogsTable"></tbody>
+          </table>
+        </div>
+        <div id="cycleLogsEmpty" class="empty" style="display:none"><div class="empty-icon">🌸</div><div class="empty-title">No cycle logs yet</div><div class="empty-sub">Start tracking from Log Entry → Cycle & Health</div></div>
+      </div>
     </div>
   </div>
 
@@ -1118,7 +1264,14 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;hei
       <div class="card">
         <div class="card-title">🗄 Data Management</div>
         <div class="form-group"><button class="btn btn-ghost" style="width:100%" onclick="exportData()">⬇ Export All JSON</button></div>
-        <div class="form-group"><label class="btn btn-ghost" style="width:100%;justify-content:center;cursor:pointer">⬆ Import JSON<input type="file" accept=".json" style="display:none" onchange="importData(event)"></label></div>
+        <div class="form-group"><label class="btn btn-ghost" style="width:100%;justify-content:center;cursor:pointer">⬆ Import Well-bee JSON<input type="file" accept=".json" style="display:none" onchange="importData(event)"></label></div>
+        <div class="form-group">
+          <label class="btn btn-ghost" style="width:100%;justify-content:center;cursor:pointer;border-color:var(--accent2);color:var(--accent2);">
+            🔀 Import from Other App
+            <input type="file" accept=".json,.csv" style="display:none" onchange="importOtherApp(event)">
+          </label>
+          <div class="form-hint" style="margin-top:5px;">Supports Clue, Flo, Apple Health, Drip, and generic CSV/JSON</div>
+        </div>
         <div class="form-group" style="margin-top:18px"><label class="form-label" style="color:var(--bad)">Danger Zone</label><button class="btn btn-danger" style="width:100%" onclick="clearAllData()">🗑 Clear All Data</button></div>
       </div>
     </div>
@@ -1671,6 +1824,8 @@ function renderRecentCycleLogs(){
 // CYCLE PAGE
 // =============================================================
 function renderCyclePage(){
+  renderCycleGrid();
+  renderCycleStats();
   const day=getCycleDay();
   const phase=estimatePhase(day);
   document.getElementById('cycle-day-full').textContent=day||'—';
@@ -3366,6 +3521,779 @@ function renderDeepDive(){
 // ── SURFACE CX INSIGHTS IN AI INSIGHTS ───────────────────────
 
 
+
+// =============================================================
+// CYCLE GRID VIEW
+// =============================================================
+let gridYear  = new Date().getFullYear();
+let gridMonth = new Date().getMonth(); // 0-indexed
+
+function shiftGridMonth(d){
+  gridMonth += d;
+  if(gridMonth > 11){ gridMonth = 0; gridYear++; }
+  if(gridMonth < 0){  gridMonth = 11; gridYear--; }
+  renderCycleGrid();
+}
+
+function switchCyclePageTab(tab){
+  ['grid','overview','charts','logs'].forEach(t=>{
+    const el = document.getElementById('cycleTab-'+t);
+    if(el) el.style.display = t===tab ? '' : 'none';
+  });
+  document.querySelectorAll('#page-cycle .tab').forEach((el,i)=>{
+    el.classList.toggle('active', ['grid','overview','charts','logs'][i]===tab);
+  });
+  if(tab==='grid')     renderCycleGrid();
+  if(tab==='overview'){ renderCycleCalendar('fullCycleCalendar',3); renderCycleSymptomStats(); renderCycleStats(); }
+  if(tab==='charts')   renderCyclePainChart();
+  if(tab==='logs')     renderCycleLogsTable();
+}
+
+function renderCycleStats(){
+  const day=getCycleDay(), phase=estimatePhase(day);
+  const el1=document.getElementById('cycle-day-full');
+  const el2=document.getElementById('cycleCurrentPhase');
+  const el3=document.getElementById('cycle-avg-len');
+  if(el1) el1.textContent=day||'—';
+  if(el2) el2.textContent=phase?PHASE_LABELS[phase]:'Unknown';
+  const mensDates=state.cycleLogs.filter(l=>l.phase==='menstrual'&&l.cycleDayNum===1).map(l=>l.date).sort();
+  if(mensDates.length>=2 && el3){
+    const gaps=[];for(let i=1;i<mensDates.length;i++)gaps.push(Math.round((new Date(mensDates[i])-new Date(mensDates[i-1]))/86400000));
+    el3.textContent=Math.round(gaps.reduce((a,b)=>a+b)/gaps.length);
+  }
+}
+
+function renderCycleGrid(){
+  const table = document.getElementById('cycleGridTable');
+  if(!table) return;
+
+  const showSubs  = document.getElementById('gridShowSubstances')?.checked ?? true;
+  const showHealth= document.getElementById('gridShowHealth')?.checked ?? true;
+  const showNutr  = document.getElementById('gridShowNutrition')?.checked ?? false;
+
+  // Build day list for the selected month
+  const daysInMonth = new Date(gridYear, gridMonth+1, 0).getDate();
+  const today = dateStr_g(new Date());
+
+  document.getElementById('gridMonthLabel').textContent =
+    new Date(gridYear, gridMonth, 1).toLocaleDateString('en-GB',{month:'long', year:'numeric'});
+
+  // Build date strings for each day of month
+  const days = Array.from({length: daysInMonth}, (_,i)=>{
+    const d = new Date(gridYear, gridMonth, i+1);
+    return dateStr_g(d);
+  });
+
+  // Index logs by date for fast lookup
+  const cycleByDate   = {};
+  const healthByDate  = {};
+  const intakeByDate  = {};
+  const nutrByDate    = {};
+  state.cycleLogs.forEach(l=>{ cycleByDate[l.date]=l; });
+  state.healthLogs.forEach(l=>{ healthByDate[l.date]=l; });
+  state.logs.forEach(l=>{ if(!intakeByDate[l.date]) intakeByDate[l.date]=[]; intakeByDate[l.date].push(l); });
+  state.nutritionLogs.forEach(l=>{ nutrByDate[l.date]=l; });
+
+  // ── Build header row ──────────────────────────────────────
+  const periodDates = new Set(state.cycleLogs.filter(l=>l.flow&&l.flow!=='none').map(l=>l.date));
+
+  let headRow = '<thead><tr><th class="cg-label" style="font-size:9px;color:var(--text-dim);border-bottom:2px solid var(--border);">TRACK</th>';
+  days.forEach((ds, i)=>{
+    const isPeriod = periodDates.has(ds);
+    const isToday  = ds === today;
+    const dayNum   = i+1;
+    const cls      = [isToday?'is-today':'', isPeriod?'is-period':''].filter(Boolean).join(' ');
+    headRow += `<th class="cg-head ${cls}">${dayNum}</th>`;
+  });
+  headRow += '</tr></thead>';
+
+  // ── Build rows ────────────────────────────────────────────
+  let rows = '';
+
+  const groupRow = (label) =>
+    `<tr class="cg-group-row"><td class="cg-label group-header-label">${label}</td>${days.map(ds=>`<td class="cg-cell"></td>`).join('')}</tr>`;
+
+  const dataRow = (label, cells) =>
+    `<tr><td class="cg-label">${label}</td>${cells}</tr>`;
+
+  const cell = (ds, content, extra='') => {
+    const isPeriod = periodDates.has(ds);
+    const isToday  = ds === today;
+    const cls = [isToday?'is-today':'', isPeriod?'is-period':''].filter(Boolean).join(' ');
+    return `<td class="cg-cell ${cls}" ${extra}>${content}</td>`;
+  };
+
+  // ── CYCLE GROUP ───────────────────────────────────────────
+  rows += groupRow('🌸 Cycle');
+
+  // Flow row
+  rows += dataRow('Bleed', days.map(ds=>{
+    const cl = cycleByDate[ds];
+    if(!cl || !cl.flow || cl.flow==='none') return cell(ds,'');
+    const flowMap = {spotting:'<span class="cg-flow-1">○</span>',light:'<span class="cg-flow-2">🩸</span>',medium:'<span class="cg-flow-3">🩸</span>',heavy:'<span class="cg-flow-4">🩸🩸</span>'};
+    return cell(ds, flowMap[cl.flow]||'');
+  }).join(''));
+
+  // Period pain row
+  rows += dataRow('Pain', days.map(ds=>{
+    const cl = cycleByDate[ds];
+    if(!cl || cl.pain==null || cl.pain===0) return cell(ds,'');
+    const v = cl.pain;
+    const col = v>=7?'var(--bad)':v>=5?'var(--warn)':'var(--good)';
+    return cell(ds, `<span class="cg-pain-num" style="color:${col}">${v}</span>`);
+  }).join(''));
+
+  // Bloating row
+  rows += dataRow('Bloat', days.map(ds=>{
+    const cl = cycleByDate[ds];
+    if(!cl || cl.bloat==null || cl.bloat===0) return cell(ds,'');
+    const v = cl.bloat;
+    const col = v>=7?'var(--bad)':v>=4?'var(--warn)':'var(--accent2)';
+    return cell(ds, `<span class="cg-pain-num" style="color:${col}">${v}</span>`);
+  }).join(''));
+
+  // Cycle mood row
+  rows += dataRow('Mood🌸', days.map(ds=>{
+    const cl = cycleByDate[ds];
+    if(!cl || cl.mood==null) return cell(ds,'');
+    const v = cl.mood;
+    const emoji = v>=8?'😊':v>=6?'😌':v>=4?'😐':v>=2?'😔':'😞';
+    return cell(ds, `<span class="cg-emoji">${emoji}</span>`);
+  }).join(''));
+
+  // Phase row
+  rows += dataRow('Phase', days.map(ds=>{
+    const cl = cycleByDate[ds];
+    if(!cl) return cell(ds,'');
+    const phaseColors={menstrual:'#f06a9a',follicular:'#f0c44a',ovulation:'#4af0c4',luteal:'#7c6af7'};
+    const phaseInit={menstrual:'M',follicular:'F',ovulation:'O',luteal:'L'};
+    const col = phaseColors[cl.phase]||'var(--text-dim)';
+    return cell(ds,`<span style="font-size:9px;font-weight:700;color:${col}">${phaseInit[cl.phase]||'?'}</span>`);
+  }).join(''));
+
+  // Cycle symptoms row (show first symptom abbreviated)
+  rows += dataRow('Sympt.', days.map(ds=>{
+    const cl = cycleByDate[ds];
+    if(!cl || !cl.symptoms?.length) return cell(ds,'');
+    const sym = cl.symptoms[0];
+    const abbr = sym.slice(0,3);
+    return cell(ds, `<span style="font-size:8px;color:var(--rose)" title="${cl.symptoms.join(', ')}">${abbr}</span>`);
+  }).join(''));
+
+  // ── HEALTH GROUP ──────────────────────────────────────────
+  if(showHealth){
+    rows += groupRow('🩺 Health');
+
+    const healthRows = [
+      {id:'sleep',  label:'Sleep',   icon:'😴', inv:false},
+      {id:'mood',   label:'Mood',    icon:'😌', inv:false},
+      {id:'energy', label:'Energy',  icon:'⚡', inv:false},
+      {id:'pain',   label:'Pain',    icon:'🤕', inv:true},
+      {id:'gut',    label:'Gut',     icon:'🫁', inv:false},
+      {id:'clarity',label:'Clarity', icon:'🧠', inv:false},
+    ];
+    const enabledIds = new Set(state.settings.enabledMetrics||[]);
+
+    healthRows.filter(r=>enabledIds.has(r.id)).forEach(row=>{
+      rows += dataRow(row.icon+' '+row.label, days.map(ds=>{
+        const hl = healthByDate[ds];
+        if(!hl || hl[row.id]==null) return cell(ds,'');
+        const v = hl[row.id];
+        const col = row.inv
+          ? (v<=3?'var(--good)':v<=6?'var(--warn)':'var(--bad)')
+          : (v>=7?'var(--good)':v>=4?'var(--warn)':'var(--bad)');
+        const h = Math.round(v/10*18);
+        return cell(ds, `<div class="cg-bar-row"><div class="cg-bar" style="height:${h}px;background:${col}"></div></div>`);
+      }).join(''));
+    });
+
+    // General health symptoms
+    rows += dataRow('Sympt.', days.map(ds=>{
+      const hl = healthByDate[ds];
+      if(!hl || !hl.symptoms?.length) return cell(ds,'');
+      return cell(ds, `<span style="font-size:9px;color:var(--bad)" title="${hl.symptoms.join(', ')}">⚠</span>`);
+    }).join(''));
+  }
+
+  // ── SUBSTANCES GROUP ──────────────────────────────────────
+  if(showSubs && state.substances.length > 0){
+    rows += groupRow('💊 Substances');
+    state.substances.forEach(sub=>{
+      rows += dataRow(sub.emoji+' '+sub.name.split(' ')[0], days.map(ds=>{
+        const dayLogs = (intakeByDate[ds]||[]).filter(l=>l.substanceId===sub.id);
+        if(dayLogs.length===0) return cell(ds, `<span class="cg-miss">·</span>`);
+        // Show dose if numeric, else just a pill bar
+        const totalDose = dayLogs.reduce((a,l)=>a+(parseFloat(l.dose)||0),0);
+        const unit = dayLogs[0].unit;
+        const isMinutes = unit==='minutes'||unit==='hours';
+        if(isMinutes){
+          // duration — show as small bar
+          const maxMin = 60;
+          const w = Math.min(Math.round(totalDose/maxMin*20),20);
+          return cell(ds, `<span class="cg-pill" style="background:${sub.color};width:${w}px" title="${totalDose} ${unit}"></span>`);
+        }
+        // pill taken — coloured pill
+        return cell(ds, `<span class="cg-pill" style="background:${sub.color}" title="${totalDose} ${unit}"></span>`, `title="${totalDose} ${unit}"`);
+      }).join(''));
+    });
+  }
+
+  // ── NUTRITION GROUP ───────────────────────────────────────
+  if(showNutr){
+    rows += groupRow('🥗 Nutrition');
+    const enabledDims = getEnabledNutrition();
+    enabledDims.forEach(dim=>{
+      rows += dataRow(dim.icon+' '+dim.label.split(' ')[0], days.map(ds=>{
+        const nl = nutrByDate[ds];
+        if(!nl || nl[dim.id]==null) return cell(ds,'');
+        const v = nl[dim.id];
+        // Heatmap colour: low=green, high=red (for most inflammatory ones)
+        const inflammatory = ['histamine','soy','sugar','alcohol','gluten','dairy'].includes(dim.id);
+        let col;
+        if(inflammatory) col = v>=7?'var(--bad)':v>=5?'var(--warn)':'var(--good)';
+        else col = v>=7?'var(--good)':v>=4?'var(--warn)':'var(--bad)';
+        const opacity = 0.15 + (v/10)*0.65;
+        return cell(ds, `<span class="cg-num" style="color:${col}">${v}</span>`);
+      }).join(''));
+    });
+  }
+
+  table.innerHTML = headRow + '<tbody>' + rows + '</tbody>';
+}
+
+function dateStr_g(d){ return d.toISOString().slice(0,10); }
+
+
+// =============================================================
+// IMPORT FROM OTHER APP
+// =============================================================
+let _importData = null; // holds parsed + mapped data ready to confirm
+
+function importOtherApp(ev) {
+  const file = ev.target.files[0];
+  if (!file) return;
+  ev.target.value = '';
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const raw = e.target.result;
+      const ext = file.name.split('.').pop().toLowerCase();
+      let parsed;
+      if (ext === 'csv') {
+        parsed = parseCSVImport(raw, file.name);
+      } else {
+        const json = JSON.parse(raw);
+        parsed = detectAndMapJSON(json, file.name);
+      }
+      if (!parsed) {
+        showToast('Could not parse file — format not recognised ⚠', 'warn');
+        return;
+      }
+      _importData = parsed;
+      showImportPreview(parsed, file.name);
+      openModal('importOtherModal');
+    } catch(err) {
+      showToast('Could not read file: ' + err.message, 'warn');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ── DETECT JSON FORMAT ────────────────────────────────────────
+function detectAndMapJSON(json, filename) {
+  const result = {
+    appName: 'Unknown app',
+    substances: [], logs: [], healthLogs: [], cycleLogs: [], nutritionLogs: [],
+    unmapped: [],
+  };
+
+  // ── Well-bee / VitaLog own format ─────────────────────────
+  if (json.substances !== undefined && json.logs !== undefined) {
+    result.appName = 'Well-bee / VitaLog';
+    result.substances  = json.substances  || [];
+    result.logs        = json.logs        || [];
+    result.healthLogs  = json.healthLogs  || [];
+    result.cycleLogs   = json.cycleLogs   || [];
+    result.nutritionLogs = json.nutritionLogs || [];
+    return result;
+  }
+
+  // ── Zyklusdaten (German NFP app) ──────────────────────────
+  // Format: { c1: { cycles: [{ days: [...] }] }, c2: {...}, ... }
+  // Each day has: date, bleeding, temperature, trackables, comment, medication, mucus
+  const zyklusKeys = Object.keys(json).filter(k => /^c\d+$/.test(k));
+  if (zyklusKeys.length > 0 && json[zyklusKeys[0]]?.cycles) {
+    result.appName = 'Zyklusdaten (NFP)';
+
+    // Bleeding code → Well-bee flow
+    const bleedMap = { ST:'heavy', MR:'medium', WE:'light', SP:'spotting', NO:'none', '':'none' };
+
+    // Mood codes → numeric
+    const moodMap = { HAP:9, GUT:8, GOO:8, NEU:5, SAD:3, TIR:3, IRR:3, ANG:2, CRY:2 };
+
+    // Trackable → symptom label
+    const trackableLabels = {
+      headache:'Headache', kopfschmerz:'Headache',
+      uls:'Cervical mucus', zervix:'Cervix',
+      libido:'Libido', lust:'Libido',
+      darm:'Gut issues', verdauung:'Gut issues',
+      schmerz:'Cramps', bauchweh:'Cramps',
+      ruecken:'Back pain', rücken:'Back pain',
+      brust:'Breast tenderness',
+      schwindel:'Dizziness', migräne:'Migraine',
+      müdigkeit:'Fatigue', sport:'Exercise',
+      stress:'Stress', krank:'Illness',
+    };
+
+    zyklusKeys.forEach(catKey => {
+      const catalog = json[catKey];
+      (catalog.cycles || []).forEach((cycle, cycleIdx) => {
+        const cycleStartDate = cycle.startDate;
+        const cycleLen = cycle.cycleLength || 28;
+        const lutealLen = cycle.lutealLength || 14;
+
+        (cycle.days || []).forEach(day => {
+          const date = day.date;
+          const dayNr = day.nr || 1;
+          if (!date) return;
+
+          // ── Determine phase from cycle day number ──────────
+          let phase = 'follicular';
+          if (dayNr <= 5 && (day.bleeding && day.bleeding !== 'NO')) phase = 'menstrual';
+          else if (dayNr >= cycleLen - lutealLen) phase = 'luteal';
+          else if (dayNr >= cycleLen - lutealLen - 3 && dayNr < cycleLen - lutealLen) phase = 'ovulation';
+
+          // ── Cycle log ─────────────────────────────────────
+          const flow = bleedMap[day.bleeding || ''] || 'none';
+          const isBleeding = flow !== 'none';
+
+          // Gather symptoms from trackables
+          const symptoms = [];
+          const trackables = day.trackables || {};
+          Object.keys(trackables).forEach(key => {
+            const label = trackableLabels[key.toLowerCase()];
+            if (label && !symptoms.includes(label)) symptoms.push(label);
+          });
+
+          // Interference → notes
+          const interferenceLabelMap = {
+            SLEEP_LATE:'Late sleep', LATE_MEASURE:'Late measurement',
+            PARTY:'Party night', MEASURE_ERROR:'Measurement error',
+            ALCOHOL:'Alcohol', SICK:'Sick', TRAVEL:'Travel',
+          };
+          const interfNotes = (day.interference || [])
+            .map(i => interferenceLabelMap[i] || i).join(', ');
+
+          // Mood from trackables
+          let mood = 5;
+          if (trackables.mood) {
+            const moodArr = Array.isArray(trackables.mood) ? trackables.mood : [trackables.mood];
+            const moodVals = moodArr.map(m => moodMap[m] || 5);
+            mood = Math.round(moodVals.reduce((a,b)=>a+b,0) / moodVals.length);
+          }
+
+          // Pain from trackables or comment
+          let pain = 0;
+          if (trackables.schmerz || trackables.bauchweh ||
+              (day.comment && /schmerz|bauchweh|weh|pain|cramp/i.test(day.comment))) {
+            pain = trackables.schmerz === 'D' ? 8 : 5;
+          }
+          if (trackables.headache === 'D') {
+            if (!symptoms.includes('Headache')) symptoms.push('Headache');
+          }
+
+          result.cycleLogs.push({
+            id: 'zyk_' + date,
+            date,
+            time: day.measureTime || '08:00',
+            ts: date + 'T08:00:00.000Z',
+            cycleDayNum: dayNr,
+            phase,
+            flow,
+            pain,
+            bloat: 0,
+            mood,
+            symptoms,
+            notes: [day.comment || '', interfNotes].filter(Boolean).join(' | '),
+          });
+
+          // ── Health log (temperature + general wellbeing) ───
+          // Temperature: stored as integer in 1/100°C (3690 = 36.90°C)
+          const hasTemp = day.temperature != null;
+          const hasMood = trackables.mood != null;
+          const hasMedication = !!day.medication;
+
+          if (hasTemp || hasMood || hasMedication) {
+            const hl = {
+              id: 'zyk_h_' + date,
+              date,
+              time: day.measureTime || '09:00',
+              ts: date + 'T09:00:00.000Z',
+              symptoms: [...symptoms],
+              notes: day.comment || '',
+            };
+
+            // Temperature stored as basal body temp — map to a "wellness" proxy
+            // 36.5-36.7 = normal low phase, 36.8-37.2 = high phase — not directly a 1-10 health score
+            // Store the raw temp in notes for reference
+            if (hasTemp) {
+              const tempC = day.temperature / 100;
+              hl.notes = [hl.notes, `BBT: ${tempC.toFixed(2)}°C`].filter(Boolean).join(' | ');
+            }
+
+            if (hasMood) hl.mood = mood;
+            if (pain > 0) hl.pain = pain;
+
+            // Medication → substance log
+            if (hasMedication) {
+              // Try to find or create a substance for this medication
+              const medName = day.medication;
+              let sub = result.substances.find(s => s.name === medName);
+              if (!sub) {
+                sub = {
+                  id: 'zyk_sub_' + medName.replace(/\s+/g,'_').toLowerCase(),
+                  name: medName,
+                  category: 'Medication (Rx)',
+                  emoji: '💊',
+                  color: '#f06a6a',
+                  defaultDose: '',
+                  notes: 'Imported from Zyklusdaten',
+                  createdAt: new Date().toISOString(),
+                };
+                result.substances.push(sub);
+              }
+              result.logs.push({
+                id: 'zyk_log_' + date + '_' + medName.replace(/\s+/g,'_'),
+                substanceId: sub.id,
+                dose: 1,
+                unit: 'tablet',
+                date,
+                time: '12:00',
+                tod: 'With lunch',
+                notes: 'Imported from Zyklusdaten',
+                ts: date + 'T12:00:00.000Z',
+              });
+            }
+
+            result.healthLogs.push(hl);
+          }
+
+          // Track unmapped trackable keys
+          Object.keys(trackables).forEach(k => {
+            if (!trackableLabels[k.toLowerCase()] && k !== 'mood' &&
+                !result.unmapped.includes(k)) {
+              result.unmapped.push('trackable: ' + k);
+            }
+          });
+        });
+      });
+    });
+
+    // Summary stats
+    console.log(`[Zyklusdaten] Imported: ${result.cycleLogs.length} cycle days, ${result.healthLogs.length} health logs, ${result.substances.length} medications, ${result.logs.length} medication logs`);
+    return result;
+  }
+
+  // ── Clue export (common format) ───────────────────────────
+  // Clue exports as { cycles: [...], entries: [...] }
+  if (json.cycles || json.entries) {
+    result.appName = 'Clue';
+    const entries = json.entries || json.data || [];
+    entries.forEach(entry => {
+      const date = entry.date || entry.day;
+      if (!date) return;
+
+      // Cycle / bleeding
+      if (entry.bleeding || entry.period || entry.flow) {
+        const flowRaw = (entry.bleeding?.value || entry.period?.value || entry.flow || '').toLowerCase();
+        const flowMap = { light:1, medium:2, moderate:2, heavy:3, spotting:0 };
+        result.cycleLogs.push({
+          id: 'clue_' + date + '_cycle',
+          date, time: '08:00', ts: date + 'T08:00:00.000Z',
+          phase: 'menstrual',
+          flow: flowRaw.includes('light')?'light':flowRaw.includes('heavy')?'heavy':flowRaw.includes('spot')?'spotting':'medium',
+          pain: entry.cramps?.value ? mapClueIntensity(entry.cramps.value) : 0,
+          bloat: entry.bloating?.value ? mapClueIntensity(entry.bloating.value) : 0,
+          mood: entry.mood?.value ? mapClueMood(entry.mood.value) : 5,
+          symptoms: [], notes: entry.notes || '',
+        });
+      }
+
+      // Sleep
+      if (entry.sleep !== undefined) {
+        const sleepVal = typeof entry.sleep === 'object' ? entry.sleep.value : entry.sleep;
+        result.healthLogs.push({
+          id: 'clue_' + date + '_health',
+          date, time: '09:00', ts: date + 'T09:00:00.000Z',
+          symptoms: [], notes: '',
+          sleep: Math.round(clamp01(sleepVal) * 10),
+        });
+      }
+
+      // Mood as health
+      if (entry.mood && !entry.bleeding) {
+        const moodVal = typeof entry.mood === 'object' ? entry.mood.value : entry.mood;
+        const existing = result.healthLogs.find(h => h.date === date);
+        const mood = mapClueMood(moodVal);
+        if (existing) existing.mood = mood;
+        else result.healthLogs.push({ id:'clue_'+date+'_h2', date, time:'09:00', ts:date+'T09:00:00.000Z', symptoms:[], notes:'', mood });
+      }
+
+      // Log unrecognised fields
+      const knownFields = ['date','day','bleeding','period','flow','cramps','mood','sleep','notes','bloating'];
+      Object.keys(entry).filter(k => !knownFields.includes(k)).forEach(k => {
+        if (!result.unmapped.includes(k)) result.unmapped.push(k);
+      });
+    });
+    return result;
+  }
+
+  // ── Flo export ────────────────────────────────────────────
+  // Flo: { cycles: [{ start_date, end_date, ... }], symptom_logs: [...] }
+  if (json.symptom_logs || (Array.isArray(json.cycles) && json.cycles[0]?.start_date)) {
+    result.appName = 'Flo';
+    (json.cycles || []).forEach(cycle => {
+      const date = cycle.start_date;
+      if (!date) return;
+      result.cycleLogs.push({
+        id: 'flo_' + date,
+        date, time:'08:00', ts:date+'T08:00:00.000Z',
+        cycleDayNum:1, phase:'menstrual',
+        flow:'medium', pain:0, bloat:0, mood:5, symptoms:[], notes:'',
+      });
+    });
+    (json.symptom_logs || []).forEach(entry => {
+      const date = entry.date;
+      if (!date) return;
+      const hl = { id:'flo_'+date+'_h', date, time:'09:00', ts:date+'T09:00:00.000Z', symptoms:[], notes:'' };
+      if (entry.sleep_quality) hl.sleep = mapFloRating(entry.sleep_quality);
+      if (entry.energy)        hl.energy = mapFloRating(entry.energy);
+      if (entry.mood)          hl.mood = mapFloRating(entry.mood);
+      if (entry.pain)          hl.pain = mapFloRating(entry.pain);
+      if (Object.keys(hl).length > 5) result.healthLogs.push(hl);
+      const known = ['date','sleep_quality','energy','mood','pain'];
+      Object.keys(entry).filter(k=>!known.includes(k)).forEach(k=>{ if(!result.unmapped.includes(k)) result.unmapped.push(k); });
+    });
+    return result;
+  }
+
+  // ── Apple Health export (exported via third-party tools as JSON) ──
+  if (json.HKQuantityTypeIdentifierHeartRate || json.data?.workouts || json.HealthData) {
+    result.appName = 'Apple Health';
+    const records = json.HealthData?.Record || json.data?.records || [];
+    records.forEach(r => {
+      const date = (r.startDate || r.date || '').slice(0, 10);
+      if (!date) return;
+      if (r.type === 'HKCategoryValueSleepAnalysis' || r.type?.includes('Sleep')) {
+        const hl = result.healthLogs.find(h=>h.date===date) || (() => { const n={id:'ah_'+date,date,time:'09:00',ts:date+'T09:00:00.000Z',symptoms:[],notes:''}; result.healthLogs.push(n); return n; })();
+        hl.sleep = Math.round(clamp01(parseFloat(r.value||5)/10) * 10) || 7;
+      }
+    });
+    if (result.healthLogs.length === 0) result.unmapped.push('(no mappable health records found — Apple Health exports vary by export tool)');
+    return result;
+  }
+
+  // ── Generic array of daily records ────────────────────────
+  // Try to handle any JSON that's an array of objects with a date field
+  const arr = Array.isArray(json) ? json : (json.records || json.data || json.entries || json.days || json.logs || []);
+  if (Array.isArray(arr) && arr.length > 0 && (arr[0].date || arr[0].day || arr[0].Date)) {
+    result.appName = 'Generic health app';
+    arr.forEach(entry => {
+      const date = (entry.date || entry.day || entry.Date || '').slice(0, 10);
+      if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+
+      const hl = { id:'gen_'+date, date, time:'09:00', ts:date+'T09:00:00.000Z', symptoms:[], notes: entry.notes||entry.note||'' };
+      let hasHealth = false;
+
+      // Try to map common field names
+      const fieldMap = {
+        sleep: ['sleep','sleep_quality','schlaf','sommeil','sueño'],
+        mood:  ['mood','laune','humeur','humor','wellbeing'],
+        energy:['energy','energie','énergie','energía'],
+        pain:  ['pain','schmerz','douleur','dolor','cramps'],
+        gut:   ['gut','digestion','darm','digestión'],
+      };
+      Object.entries(fieldMap).forEach(([metric, aliases]) => {
+        aliases.forEach(alias => {
+          const val = entry[alias] ?? entry[alias.charAt(0).toUpperCase()+alias.slice(1)];
+          if (val != null && !hasOwnProperty.call(hl, metric)) {
+            const num = parseFloat(val);
+            if (!isNaN(num)) {
+              // Normalise to 1-10 scale (handle 0-1, 0-5, 0-10, 1-10)
+              hl[metric] = num <= 1 ? Math.round(num*10) : num <= 5 ? Math.round(num*2) : Math.round(num);
+              hl[metric] = Math.max(1, Math.min(10, hl[metric]));
+              hasHealth = true;
+            }
+          }
+        });
+      });
+
+      // Bleeding / cycle
+      const bleedFields = ['bleeding','period','menstruation','blutung','flow','mens'];
+      bleedFields.forEach(f => {
+        const val = entry[f];
+        if (val && val !== false && val !== 0 && val !== 'none') {
+          result.cycleLogs.push({
+            id:'gen_'+date+'_c', date, time:'08:00', ts:date+'T08:00:00.000Z',
+            phase:'menstrual',
+            flow: typeof val === 'string' ? (val.toLowerCase().includes('heavy')?'heavy':val.toLowerCase().includes('light')?'light':'medium') : 'medium',
+            pain:0, bloat:0, mood:5, symptoms:[], notes:'',
+          });
+        }
+      });
+
+      if (hasHealth) result.healthLogs.push(hl);
+
+      // Track unmapped fields
+      const allMapped = ['date','day','Date','notes','note',...Object.values(fieldMap).flat(),...bleedFields];
+      Object.keys(entry).filter(k => !allMapped.includes(k)).forEach(k => {
+        if (!result.unmapped.includes(k)) result.unmapped.push(k);
+      });
+    });
+    return result;
+  }
+
+  // ── Unknown format ────────────────────────────────────────
+  result.appName = 'Unknown format';
+  result.unmapped = Object.keys(json).slice(0, 20);
+  return result;
+}
+
+// ── CSV PARSER ────────────────────────────────────────────────
+function parseCSVImport(csv, filename) {
+  const lines = csv.trim().split('\n');
+  if (lines.length < 2) return null;
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,'').toLowerCase());
+  const rows = lines.slice(1).map(l => {
+    const vals = l.split(',').map(v => v.trim().replace(/^"|"$/g,''));
+    const obj = {};
+    headers.forEach((h,i) => { obj[h] = vals[i]; });
+    return obj;
+  });
+  return detectAndMapJSON(rows, filename);
+}
+
+// ── HELPER MAPPERS ────────────────────────────────────────────
+function mapClueIntensity(v) {
+  if (!v) return 0;
+  const s = v.toString().toLowerCase();
+  if (s.includes('light') || s === '1') return 3;
+  if (s.includes('medium') || s.includes('moderate') || s === '2') return 6;
+  if (s.includes('severe') || s.includes('strong') || s === '3') return 9;
+  const n = parseFloat(v);
+  return isNaN(n) ? 3 : Math.round(clamp01(n/3)*10);
+}
+function mapClueMood(v) {
+  if (!v) return 5;
+  const s = v.toString().toLowerCase();
+  if (s.includes('happy') || s.includes('great')) return 9;
+  if (s.includes('good') || s.includes('fine')) return 7;
+  if (s.includes('okay') || s.includes('ok')) return 5;
+  if (s.includes('sad') || s.includes('down')) return 3;
+  if (s.includes('bad') || s.includes('terrible')) return 2;
+  const n = parseFloat(v);
+  return isNaN(n) ? 5 : Math.max(1, Math.min(10, Math.round(n)));
+}
+function mapFloRating(v) {
+  const s = (v||'').toString().toLowerCase();
+  const ratingMap = { low:2, poor:2, medium:5, moderate:5, ok:5, high:8, good:8, great:9 };
+  for (const [k,val] of Object.entries(ratingMap)) { if(s.includes(k)) return val; }
+  const n = parseFloat(v);
+  return isNaN(n) ? 5 : Math.max(1, Math.min(10, Math.round(n)));
+}
+function clamp01(v) { return Math.max(0, Math.min(1, v)); }
+const hasOwnProperty = Object.prototype.hasOwnProperty;
+
+// ── PREVIEW UI ────────────────────────────────────────────────
+function showImportPreview(parsed, filename) {
+  document.getElementById('importPreviewApp').innerHTML =
+    `<strong>Detected:</strong> ${parsed.appName} &nbsp;·&nbsp; <span style="color:var(--text-dim)">File: ${filename}</span>`;
+
+  const rows = [
+    { type: '💊 Substances',   key: 'substances',   sample: parsed.substances[0]?.name || '—' },
+    { type: '📋 Intake Logs',  key: 'logs',         sample: parsed.logs[0] ? (parsed.logs[0].date + ' ' + (parsed.logs[0].dose||'')+''+( parsed.logs[0].unit||'')) : '—' },
+    { type: '🩺 Health Logs',  key: 'healthLogs',   sample: parsed.healthLogs[0]?.date || '—' },
+    { type: '🌸 Cycle Logs',   key: 'cycleLogs',    sample: parsed.cycleLogs[0] ? parsed.cycleLogs[0].date + ' ' + (parsed.cycleLogs[0].flow||'') : '—' },
+    { type: '🥗 Nutrition',    key: 'nutritionLogs', sample: parsed.nutritionLogs[0]?.date || '—' },
+  ];
+
+  const tbody = document.getElementById('importPreviewBody');
+  tbody.innerHTML = rows.map(row => {
+    const count = parsed[row.key]?.length || 0;
+    const hasData = count > 0;
+    return `<tr>
+      <td>${row.type}</td>
+      <td class="mono" style="color:${hasData?'var(--accent)':'var(--text-dim)'}">${count}</td>
+      <td style="font-size:11px;color:var(--text-muted)">${row.sample}</td>
+      <td><input type="checkbox" id="import_chk_${row.key}" ${hasData?'checked':''} ${hasData?'':'disabled'}
+          style="accent-color:var(--accent);width:15px;height:15px"></td>
+    </tr>`;
+  }).join('');
+
+  const unmappedEl = document.getElementById('importUnmapped');
+  const unmappedList = document.getElementById('importUnmappedList');
+  if (parsed.unmapped?.length > 0) {
+    unmappedEl.style.display = '';
+    unmappedList.textContent = parsed.unmapped.join(', ');
+  } else {
+    unmappedEl.style.display = 'none';
+  }
+}
+
+// ── CONFIRM & MERGE ───────────────────────────────────────────
+function confirmImportOtherApp() {
+  if (!_importData) return;
+
+  let added = { substances:0, logs:0, healthLogs:0, cycleLogs:0, nutritionLogs:0 };
+
+  const merge = (key, idFn) => {
+    if (!document.getElementById('import_chk_'+key)?.checked) return;
+    const existing = new Set(state[key].map(idFn));
+    (_importData[key] || []).forEach(item => {
+      const id = idFn(item);
+      if (!existing.has(id)) {
+        // Give new ID to avoid collisions
+        item.id = key.slice(0,3) + '_imp_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+        state[key].push(item);
+        added[key]++;
+      }
+    });
+  };
+
+  // For health/cycle logs, deduplicate by date (one per day)
+  const mergeByDate = (key) => {
+    if (!document.getElementById('import_chk_'+key)?.checked) return;
+    const existingDates = new Set(state[key].map(l=>l.date));
+    (_importData[key] || []).forEach(item => {
+      if (!existingDates.has(item.date)) {
+        item.id = key.slice(0,3)+'_imp_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+        state[key].push(item);
+        existingDates.add(item.date);
+        added[key]++;
+      }
+    });
+  };
+
+  merge('substances', s => s.name?.toLowerCase() || s.id);
+  merge('logs', l => l.substanceId + '_' + l.date + '_' + l.time);
+  mergeByDate('healthLogs');
+  mergeByDate('cycleLogs');
+  mergeByDate('nutritionLogs');
+
+  save();
+  closeModal('importOtherModal');
+  _importData = null;
+
+  const total = Object.values(added).reduce((a,b)=>a+b, 0);
+  showToast(`Imported ${total} records ✓`);
+  refreshPage(currentPage);
+  populateSubstanceDropdowns();
+
+  // Show breakdown
+  const parts = Object.entries(added).filter(([,v])=>v>0).map(([k,v])=>`${v} ${k}`);
+  if (parts.length > 0) console.log('Imported:', parts.join(', '));
+}
+
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 }
@@ -3400,5 +4328,49 @@ function dismissInstall(){const ib=document.getElementById('installBanner');if(i
 window.addEventListener('appinstalled',()=>{const ib=document.getElementById('installBanner');if(ib)ib.classList.remove('show');showToast('Well-bee installed! 🐝');});
 init();
 </script>
+
+<!-- IMPORT FROM OTHER APP MODAL -->
+<div class="modal-overlay" id="importOtherModal">
+  <div class="modal" style="width:620px;">
+    <div class="modal-title">
+      🔀 Import from Other App
+      <button class="modal-close" onclick="closeModal('importOtherModal')">✕</button>
+    </div>
+
+    <!-- Step 1: preview -->
+    <div id="importStep1">
+      <div class="notice notice-info" style="margin-bottom:14px">
+        <span>ⓘ</span>
+        <span>Well-bee detected the following data in your file. Review what will be imported, then confirm.</span>
+      </div>
+
+      <div id="importPreviewApp" style="margin-bottom:12px;font-size:13px;color:var(--text-muted);"></div>
+
+      <!-- Preview table -->
+      <div style="overflow-x:auto;margin-bottom:14px;">
+        <table class="data-table" id="importPreviewTable">
+          <thead><tr><th>Data Type</th><th>Records Found</th><th>Sample</th><th>Import?</th></tr></thead>
+          <tbody id="importPreviewBody"></tbody>
+        </table>
+      </div>
+
+      <div class="notice notice-warn">
+        <span>⚠</span>
+        <span>Importing will <strong>add</strong> to your existing data, not replace it. Duplicates on the same date will be skipped.</span>
+      </div>
+
+      <div id="importUnmapped" style="margin-top:12px;display:none">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;">⚠ Fields not automatically mapped (you can map them manually):</div>
+        <div id="importUnmappedList" style="font-size:12px;color:var(--text-dim);"></div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('importOtherModal')">Cancel</button>
+      <button class="btn btn-primary" id="importConfirmBtn" onclick="confirmImportOtherApp()">Import Selected</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
