@@ -1321,9 +1321,12 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;hei
         <div class="form-group">
           <label class="btn btn-ghost" style="width:100%;justify-content:center;cursor:pointer;border-color:var(--accent2);color:var(--accent2);">
             🔀 Import from Other App
-            <input type="file" accept=".json,.csv" style="display:none" onchange="importOtherApp(event)">
+            <input type="file" accept=".json,.csv" multiple style="display:none" onchange="importOtherApp(event)">
           </label>
-          <div class="form-hint" style="margin-top:5px;">Supports Clue, Flo, Apple Health, Drip, and generic CSV/JSON</div>
+          <div class="form-hint" style="margin-top:5px;">
+            Zyklusdaten: select <strong>both</strong> Einstellungen-Backup.json + Zyklusdaten-Backup.json together.<br>
+            Also supports Clue, Flo, Apple Health, and generic CSV/JSON.
+          </div>
         </div>
         <div class="form-group" style="margin-top:18px"><label class="form-label" style="color:var(--bad)">Danger Zone</label><button class="btn btn-danger" style="width:100%" onclick="clearAllData()">🗑 Clear All Data</button></div>
       </div>
@@ -3856,39 +3859,84 @@ function dateStr_g(d){ return d.toISOString().slice(0,10); }
 let _importData = null; // holds parsed + mapped data ready to confirm
 
 function importOtherApp(ev) {
-  const file = ev.target.files[0];
-  if (!file) return;
+  const files = Array.from(ev.target.files);
   ev.target.value = '';
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const raw = e.target.result;
-      const ext = file.name.split('.').pop().toLowerCase();
-      let parsed;
-      if (ext === 'csv') {
-        parsed = parseCSVImport(raw, file.name);
-      } else {
-        const json = JSON.parse(raw);
-        parsed = detectAndMapJSON(json, file.name);
+  if (!files.length) return;
+
+  // Read all files as text first, then process
+  const reads = files.map(file => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve({ name: file.name, content: e.target.result });
+    reader.onerror = reject;
+    reader.readAsText(file);
+  }));
+
+  Promise.all(reads).then(results => {
+    // Separate settings files from data files
+    // Settings file: contains _meta + settings.ui.dayEntryPreferences
+    // Data file: contains c1, c2... cycle catalogs OR other app formats
+
+    let settingsRenames = null;
+    let dataFiles = [];
+
+    results.forEach(({ name, content }) => {
+      try {
+        const json = JSON.parse(content);
+        // Zyklusdaten settings file detection
+        if (json._meta?.appVersion && json.settings?.ui?.dayEntryPreferences?.trackableRenames) {
+          settingsRenames = json.settings.ui.dayEntryPreferences.trackableRenames;
+          const count = Object.keys(settingsRenames).length;
+          console.log(`[Import] Loaded Zyklusdaten settings: ${count} trackable renames from ${name}`);
+          // Also store globally for subsequent imports
+          window._zyklusSettings = json.settings.ui.dayEntryPreferences;
+        } else {
+          dataFiles.push({ name, content, json });
+        }
+      } catch(e) {
+        showToast(`Could not parse ${name}: ${e.message}`, 'warn');
       }
-      // Special case: settings file loaded
-      if (parsed._isSettingsFile) {
-        showToast('Zyklusdaten settings loaded ✓ — now upload your Zyklusdaten cycle backup', 'success');
-        showToast(`${parsed._settingsLoaded} trackable names loaded — now import your cycle data file`);
-        return;
-      }
-    if (!parsed) {
-        showToast('Could not parse file — format not recognised ⚠', 'warn');
-        return;
-      }
-      _importData = parsed;
-      showImportPreview(parsed, file.name);
-      openModal('importOtherModal');
-    } catch(err) {
-      showToast('Could not read file: ' + err.message, 'warn');
+    });
+
+    // If only a settings file was uploaded with no data file
+    if (settingsRenames && dataFiles.length === 0) {
+      const count = Object.keys(settingsRenames).length;
+      showToast(`✓ Settings loaded: ${count} substance names. Now also select your cycle data file.`);
+      return;
     }
-  };
-  reader.readAsText(file);
+
+    if (dataFiles.length === 0) {
+      showToast('No data file found ⚠', 'warn');
+      return;
+    }
+
+    // Process each data file, injecting settings renames if available
+    // Use first data file (combine if multiple in future)
+    const { name, json } = dataFiles[0];
+
+    // Inject settings renames into the JSON before parsing
+    // so detectAndMapJSON can read them from json._settings
+    if (settingsRenames) {
+      json._settings = { trackableRenames: settingsRenames };
+    } else if (window._zyklusSettings?.trackableRenames) {
+      // Use previously loaded settings from a prior import session
+      json._settings = { trackableRenames: window._zyklusSettings.trackableRenames };
+      console.log('[Import] Using cached Zyklusdaten settings');
+    }
+
+    const parsed = detectAndMapJSON(json, name);
+
+    if (!parsed || parsed._isSettingsFile) {
+      showToast('Could not parse data file ⚠', 'warn');
+      return;
+    }
+
+    _importData = parsed;
+    showImportPreview(parsed, name + (settingsRenames ? ' + settings' : ''));
+    openModal('importOtherModal');
+
+  }).catch(err => {
+    showToast('Could not read files: ' + err.message, 'warn');
+  });
 }
 
 // ── DETECT JSON FORMAT ────────────────────────────────────────
@@ -4653,14 +4701,28 @@ const hasOwnProperty = Object.prototype.hasOwnProperty;
 
 // ── PREVIEW UI ────────────────────────────────────────────────
 function showImportPreview(parsed, filename) {
+  const hasSettings = parsed.appName.includes('Zyklusdaten') &&
+    (parsed.substances.length > 0) &&
+    !parsed.substances.some(s => s.name.startsWith('zyk_sub_'));
+
+  const settingsBadge = parsed.appName.includes('Zyklusdaten')
+    ? (hasSettings
+        ? `<span style="color:var(--good);font-size:11px;margin-left:8px">✓ Settings loaded — substance names resolved</span>`
+        : `<span style="color:var(--warn);font-size:11px;margin-left:8px">⚠ No settings file — substance names will be generic IDs. Select both files together for best results.</span>`)
+    : '';
+
   document.getElementById('importPreviewApp').innerHTML =
-    `<strong>Detected:</strong> ${parsed.appName} &nbsp;·&nbsp; <span style="color:var(--text-dim)">File: ${filename}</span>`;
+    `<strong>Detected:</strong> ${parsed.appName} &nbsp;·&nbsp; <span style="color:var(--text-dim)">${filename}</span>${settingsBadge}`;
+
+  // Show first few substance names so user can verify
+  const subSample = parsed.substances.slice(0,4).map(s=>s.emoji+' '+s.name).join(', ')
+    + (parsed.substances.length > 4 ? ` +${parsed.substances.length-4} more` : '');
 
   const rows = [
-    { type: '💊 Substances',   key: 'substances',   sample: parsed.substances[0]?.name || '—' },
-    { type: '📋 Intake Logs',  key: 'logs',         sample: parsed.logs[0] ? (parsed.logs[0].date + ' ' + (parsed.logs[0].dose||'')+''+( parsed.logs[0].unit||'')) : '—' },
-    { type: '🩺 Health Logs',  key: 'healthLogs',   sample: parsed.healthLogs[0]?.date || '—' },
-    { type: '🌸 Cycle Logs',   key: 'cycleLogs',    sample: parsed.cycleLogs[0] ? parsed.cycleLogs[0].date + ' ' + (parsed.cycleLogs[0].flow||'') : '—' },
+    { type: '💊 Substances',   key: 'substances',    sample: subSample || '—' },
+    { type: '📋 Intake Logs',  key: 'logs',          sample: parsed.logs[0] ? (parsed.logs[0].date + ' · ' + (parsed.logs[0].dose||'')+(parsed.logs[0].unit||'')) : '—' },
+    { type: '🩺 Health Logs',  key: 'healthLogs',    sample: parsed.healthLogs[0]?.date || '—' },
+    { type: '🌸 Cycle Logs',   key: 'cycleLogs',     sample: parsed.cycleLogs[0] ? parsed.cycleLogs[0].date + ' ' + (parsed.cycleLogs[0].flow||'') : '—' },
     { type: '🥗 Nutrition',    key: 'nutritionLogs', sample: parsed.nutritionLogs[0]?.date || '—' },
   ];
 
@@ -4671,7 +4733,7 @@ function showImportPreview(parsed, filename) {
     return `<tr>
       <td>${row.type}</td>
       <td class="mono" style="color:${hasData?'var(--accent)':'var(--text-dim)'}">${count}</td>
-      <td style="font-size:11px;color:var(--text-muted)">${row.sample}</td>
+      <td style="font-size:11px;color:var(--text-muted);max-width:200px;overflow:hidden;text-overflow:ellipsis">${row.sample}</td>
       <td><input type="checkbox" id="import_chk_${row.key}" ${hasData?'checked':''} ${hasData?'':'disabled'}
           style="accent-color:var(--accent);width:15px;height:15px"></td>
     </tr>`;
@@ -4681,7 +4743,7 @@ function showImportPreview(parsed, filename) {
   const unmappedList = document.getElementById('importUnmappedList');
   if (parsed.unmapped?.length > 0) {
     unmappedEl.style.display = '';
-    unmappedList.textContent = parsed.unmapped.join(', ');
+    unmappedList.textContent = [...new Set(parsed.unmapped)].join(', ');
   } else {
     unmappedEl.style.display = 'none';
   }
