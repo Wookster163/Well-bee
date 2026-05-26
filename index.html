@@ -526,6 +526,31 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;hei
 .weather-status.error{color:var(--bad);}
 .weather-status.ok{color:var(--good);}
 
+
+/* ═══════════════════ CHART SWIPE NAV ════════════════════════ */
+.chart-swipe-wrap{position:relative;touch-action:pan-y;}
+.chart-swipe-overlay{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  display:flex;align-items:center;justify-content:space-between;
+  pointer-events:none;padding:0 4px;z-index:2;
+}
+.chart-swipe-btn{
+  width:28px;height:28px;border-radius:50%;
+  background:rgba(13,17,23,.7);border:1px solid var(--border);
+  color:var(--text-muted);font-size:14px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;pointer-events:all;
+  opacity:0;transition:opacity .2s;flex-shrink:0;
+}
+.chart-swipe-wrap:hover .chart-swipe-btn{opacity:1;}
+.chart-swipe-wrap:active .chart-swipe-btn{opacity:1;}
+.chart-range-label{
+  position:absolute;top:4px;right:8px;
+  font-family:'DM Mono',monospace;font-size:10px;
+  color:var(--text-dim);pointer-events:none;
+  background:rgba(13,17,23,.6);padding:2px 6px;border-radius:4px;
+}
+
 </style>
 </head>
 <body>
@@ -1914,6 +1939,8 @@ function renderCyclePage(){
     document.getElementById('cycle-avg-len').textContent=Math.round(gaps.reduce((a,b)=>a+b)/gaps.length);
   }else document.getElementById('cycle-avg-len').textContent='—';
   renderCycleCalendar('fullCycleCalendar',3);renderCyclePainChart();renderCycleLogsTable();renderCycleSymptomStats();
+  renderCyclePainChartWithOffset();
+  setTimeout(initChartSwipe,100);
 }
 
 function renderCyclePainChart(){
@@ -1976,7 +2003,8 @@ function renderNutritionPage(){
     <td style="font-size:11px;color:var(--text-muted);max-width:150px">${l.foods||'—'}</td>
     <td><button class="btn btn-danger btn-sm" onclick="confirmDelete('nutrition','${l.id}','${l.date} — ${l.meal}')">Del</button></td>
   </tr>`).join('');
-  renderNutritionTrendChart();
+  renderNutritionTrendChartWithOffset();
+  setTimeout(initChartSwipe,100);
 }
 
 function nutrCell(v){
@@ -2325,11 +2353,12 @@ function lagTableRow(d){
 function switchChartTab(tab){
   ['intake','health','cycle','nutrition','overlap'].forEach(t=>document.getElementById('chartTab-'+t).style.display=t===tab?'':'none');
   document.querySelectorAll('#page-charts .tab').forEach((el,i)=>el.classList.toggle('active',['intake','health','cycle','nutrition','overlap'][i]===tab));
-  if(tab==='intake')renderIntakeChart();
-  if(tab==='health')renderHealthTrendChart();
-  if(tab==='cycle')renderCycleFullChart();
+  if(tab==='intake')renderIntakeChartWithOffset();
+  if(tab==='health')renderHealthTrendChartWithOffset();
+  if(tab==='cycle')renderCycleFullChartWithOffset();
   if(tab==='nutrition'){populateNutritionChartDropdown();renderNutritionLineChart();}
   if(tab==='overlap'){populateChartDropdowns();renderOverlapChart();}
+  setTimeout(initChartSwipe,100);
 }
 
 function populateChartDropdowns(){
@@ -2402,7 +2431,8 @@ function renderHealthLogs(){
   if(logs.length===0){tbody.innerHTML='';empty.style.display='';return;}
   empty.style.display='none';
   tbody.innerHTML=logs.map(l=>`<tr><td class="mono" style="font-size:11px">${l.date} ${l.time}</td>${metrics.map(m=>scoreCell(l[m.id],m.inverted)).join('')}<td style="font-size:11px;color:var(--text-muted)">${(l.symptoms||[]).join(', ')||'—'}</td></tr>`).join('');
-  renderHealthHistoryChart();
+  renderHealthHistoryChartWithOffset();
+  setTimeout(initChartSwipe,100);
 }
 
 function scoreCell(v,inv){
@@ -5003,6 +5033,334 @@ function injectMoonRow(){
     tbody.insertBefore(sepRow,tbody.firstChild);
   }
 }
+
+
+// =============================================================
+// CHART SWIPE NAVIGATION
+// =============================================================
+// Each swipeable chart has a "view window" = offset in days/months
+// Positive offset = viewing older data
+
+const chartOffsets = {}; // chartId → offset (in days)
+
+// Make a chart-wrap div swipeable
+// chartId: canvas element id
+// unit: 'days' | 'months'
+// defaultRange: how many days shown by default
+// onSwipe: called with new offset when user swipes
+function makeSwipeable(wrapEl, chartId, onShift) {
+  if (!wrapEl) return;
+  if (wrapEl.dataset.swipeInit) return; // already initialised
+  wrapEl.dataset.swipeInit = '1';
+  wrapEl.classList.add('chart-swipe-wrap');
+
+  // Arrow buttons
+  const overlay = document.createElement('div');
+  overlay.className = 'chart-swipe-overlay';
+  overlay.innerHTML =
+    `<button class="chart-swipe-btn" data-dir="-1" title="Older">‹</button>
+     <button class="chart-swipe-btn" data-dir="1" title="Newer">›</button>`;
+  wrapEl.appendChild(overlay);
+
+  overlay.querySelectorAll('.chart-swipe-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      onShift(parseInt(btn.dataset.dir));
+    });
+  });
+
+  // Touch swipe
+  let startX = null, startY = null;
+  wrapEl.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }, {passive: true});
+
+  wrapEl.addEventListener('touchend', e => {
+    if (startX === null) return;
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = e.changedTouches[0].clientY - startY;
+    if (Math.abs(dx) < 30 || Math.abs(dy) > Math.abs(dx)) { startX = null; return; }
+    // Swipe left = older (shift -1), swipe right = newer (shift +1)
+    onShift(dx < 0 ? -1 : 1);
+    startX = null;
+  }, {passive: true});
+
+  // Mouse drag (desktop)
+  let mouseStartX = null;
+  wrapEl.addEventListener('mousedown', e => { mouseStartX = e.clientX; });
+  wrapEl.addEventListener('mouseup', e => {
+    if (mouseStartX === null) return;
+    const dx = e.clientX - mouseStartX;
+    if (Math.abs(dx) > 40) onShift(dx < 0 ? -1 : 1);
+    mouseStartX = null;
+  });
+}
+
+// Range label helper
+function setRangeLabel(wrapEl, text) {
+  let lbl = wrapEl.querySelector('.chart-range-label');
+  if (!lbl) { lbl = document.createElement('div'); lbl.className = 'chart-range-label'; wrapEl.appendChild(lbl); }
+  lbl.textContent = text;
+}
+
+// =============================================================
+// PER-CHART SWIPE STATE + RENDER PATCHES
+// =============================================================
+
+// ── Offset store ──────────────────────────────────────────────
+const _co = {}; // chartId → dayOffset (0 = most recent, positive = older)
+
+function getDateRangeForChart(chartId, rangeDays) {
+  const off = _co[chartId] || 0;
+  const end = new Date();
+  end.setDate(end.getDate() - off * rangeDays);
+  const start = new Date(end);
+  start.setDate(start.getDate() - rangeDays + 1);
+  return { start, end,
+    label: start.toLocaleDateString('en-GB',{month:'short',day:'numeric'}) + ' – ' +
+           end.toLocaleDateString('en-GB',{month:'short',day:'numeric',year:'2-digit'}) };
+}
+
+function daysInRange(start, end) {
+  const days = [];
+  const d = new Date(start);
+  while (d <= end) { days.push(dateStr(new Date(d))); d.setDate(d.getDate()+1); }
+  return days;
+}
+
+// ── SETUP: called after pages render ──────────────────────────
+function initChartSwipe() {
+  // Overview chart (dashboard) — 7-day window
+  const owrap = document.getElementById('overviewChart')?.parentElement;
+  if (owrap && !owrap.dataset.swipeInit) {
+    makeSwipeable(owrap, 'overview', dir => {
+      _co.overview = Math.max(0, (_co.overview||0) - dir);
+      renderOverviewChartWithOffset();
+    });
+  }
+
+  // Intake chart — uses chartTimeRange select
+  const iwrap = document.getElementById('intakeChart')?.parentElement;
+  if (iwrap && !iwrap.dataset.swipeInit) {
+    makeSwipeable(iwrap, 'intake', dir => {
+      _co.intake = Math.max(0, (_co.intake||0) - dir);
+      renderIntakeChartWithOffset();
+    });
+  }
+
+  // Health history chart
+  const hhwrap = document.getElementById('healthHistoryChart')?.parentElement;
+  if (hhwrap && !hhwrap.dataset.swipeInit) {
+    makeSwipeable(hhwrap, 'healthHistory', dir => {
+      _co.healthHistory = Math.max(0, (_co.healthHistory||0) - dir);
+      renderHealthHistoryChartWithOffset();
+    });
+  }
+
+  // Health trend chart
+  const htwrap = document.getElementById('healthTrendChart')?.parentElement;
+  if (htwrap && !htwrap.dataset.swipeInit) {
+    makeSwipeable(htwrap, 'healthTrend', dir => {
+      _co.healthTrend = Math.max(0, (_co.healthTrend||0) - dir);
+      renderHealthTrendChartWithOffset();
+    });
+  }
+
+  // Cycle pain chart
+  const cpwrap = document.getElementById('cyclePainChart')?.parentElement;
+  if (cpwrap && !cpwrap.dataset.swipeInit) {
+    makeSwipeable(cpwrap, 'cyclePain', dir => {
+      _co.cyclePain = Math.max(0, (_co.cyclePain||0) - dir);
+      renderCyclePainChartWithOffset();
+    });
+  }
+
+  // Cycle full chart
+  const cfwrap = document.getElementById('cycleFullChart')?.parentElement;
+  if (cfwrap && !cfwrap.dataset.swipeInit) {
+    makeSwipeable(cfwrap, 'cycleFull', dir => {
+      _co.cycleFull = Math.max(0, (_co.cycleFull||0) - dir);
+      renderCycleFullChartWithOffset();
+    });
+  }
+
+  // Cycle dash chart
+  const cdwrap = document.getElementById('cycleDashChart')?.parentElement;
+  if (cdwrap && !cdwrap.dataset.swipeInit) {
+    makeSwipeable(cdwrap, 'cycleDash', dir => {
+      _co.cycleDash = Math.max(0, (_co.cycleDash||0) - dir);
+      renderCycleDashChartWithOffset();
+    });
+  }
+
+  // Nutrition trend
+  const ntwrap = document.getElementById('nutritionTrendChart')?.parentElement;
+  if (ntwrap && !ntwrap.dataset.swipeInit) {
+    makeSwipeable(ntwrap, 'nutritionTrend', dir => {
+      _co.nutritionTrend = Math.max(0, (_co.nutritionTrend||0) - dir);
+      renderNutritionTrendChartWithOffset();
+    });
+  }
+}
+
+// =============================================================
+// OFFSET-AWARE CHART RENDERERS
+// =============================================================
+
+function getSlicedLogs(logArray, rangeDays, offsetKey) {
+  const off = _co[offsetKey] || 0;
+  const sorted = [...logArray].sort((a,b)=>a.date.localeCompare(b.date));
+  if (sorted.length === 0) return { logs:[], label:'No data' };
+  const total = sorted.length;
+  // Window: most recent `rangeDays` items, shifted by offset*rangeDays
+  const endIdx = Math.max(0, total - off * rangeDays);
+  const startIdx = Math.max(0, endIdx - rangeDays);
+  const slice = sorted.slice(startIdx, endIdx);
+  const label = slice.length > 0
+    ? slice[0].date.slice(5) + ' – ' + slice[slice.length-1].date.slice(5)
+    : 'No data';
+  return { logs: slice, label };
+}
+
+function getDayRange(rangeDays, offsetKey) {
+  const off = _co[offsetKey] || 0;
+  const end = new Date();
+  end.setDate(end.getDate() - off * rangeDays);
+  const days = [];
+  for (let i = rangeDays-1; i >= 0; i--) {
+    const d = new Date(end);
+    d.setDate(d.getDate()-i);
+    days.push({ date: dateStr(d), label: d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric'}) });
+  }
+  const label = days[0].date.slice(5) + ' – ' + days[days.length-1].date.slice(5);
+  return { days, label };
+}
+
+// ── Overview chart (dashboard) ────────────────────────────────
+function renderOverviewChartWithOffset() {
+  const ctx = document.getElementById('overviewChart'); if(!ctx) return;
+  destroyChart('overview');
+  const { days, label } = getDayRange(7, 'overview');
+  const datasets = {};
+  days.forEach((day,i) => {
+    state.logs.filter(l=>l.date===day.date).forEach(l=>{
+      if(!datasets[l.substanceId]) datasets[l.substanceId]=new Array(7).fill(0);
+      datasets[l.substanceId][i]+=(parseFloat(l.dose)||1);
+    });
+  });
+  const cds=Object.entries(datasets).map(([id,data])=>{const s=state.substances.find(x=>x.id===id);return{label:s?.name||id,data,backgroundColor:(s?.color||'#4af0c4')+'80',borderColor:s?.color||'#4af0c4',borderWidth:2,borderRadius:4};});
+  charts.overview=new Chart(ctx,{type:'bar',data:{labels:days.map(d=>d.label),datasets:cds.length?cds:[{label:'No data',data:new Array(7).fill(0),backgroundColor:'#2a3444'}]},options:chartOpts('stacked')});
+  const wrap=ctx.parentElement; if(wrap) setRangeLabel(wrap, label);
+}
+
+// ── Intake chart ──────────────────────────────────────────────
+function renderIntakeChartWithOffset() {
+  const ctx=document.getElementById('intakeChart'); if(!ctx) return;
+  destroyChart('intake');
+  const rangeDays=parseInt(document.getElementById('chartTimeRange')?.value||7);
+  const filterSub=document.getElementById('chartSubstanceFilter')?.value||'';
+  const {days,label}=getDayRange(rangeDays,'intake');
+  const data=days.map(d=>state.logs.filter(l=>l.date===d.date&&(!filterSub||l.substanceId===filterSub)).reduce((a,l)=>a+(parseFloat(l.dose)||0),0));
+  const sub=filterSub?state.substances.find(x=>x.id===filterSub):null;
+  const color=sub?.color||'#4af0c4';
+  charts.intake=new Chart(ctx,{type:'bar',data:{labels:days.map(d=>d.label),datasets:[{label:sub?.name||'Total Dose',data,backgroundColor:color+'60',borderColor:color,borderWidth:2,borderRadius:5}]},options:chartOpts()});
+  const wrap=ctx.parentElement; if(wrap) setRangeLabel(wrap,label);
+}
+
+// ── Health history chart ──────────────────────────────────────
+function renderHealthHistoryChartWithOffset() {
+  const ctx=document.getElementById('healthHistoryChart'); if(!ctx) return;
+  destroyChart('healthHistory');
+  const {logs,label}=getSlicedLogs(state.healthLogs,30,'healthHistory');
+  if(logs.length<2){const wrap=ctx.parentElement;if(wrap)setRangeLabel(wrap,'Not enough data');return;}
+  const colors=['#7c6af7','#4af0c4','#f0c44a','#f06a6a','#4ab0f0','#f0784a'];
+  charts.healthHistory=new Chart(ctx,{type:'line',data:{labels:logs.map(l=>l.date.slice(5)),datasets:getEnabledMetrics().slice(0,4).map((m,i)=>({label:m.icon+' '+m.label,data:logs.map(l=>l[m.id]??null),borderColor:colors[i],backgroundColor:colors[i]+'20',tension:.4,fill:false,spanGaps:true,pointRadius:3,borderWidth:2}))},options:{...chartOpts('health'),scales:{x:{ticks:{color:'#7a8ba3',maxTicksLimit:10},grid:{color:'#2a3444'}},y:{min:0,max:10,ticks:{color:'#7a8ba3'},grid:{color:'#2a3444'}}}}});
+  const wrap=ctx.parentElement;if(wrap)setRangeLabel(wrap,label);
+}
+
+// ── Health trend chart (charts page) ─────────────────────────
+function renderHealthTrendChartWithOffset() {
+  const ctx=document.getElementById('healthTrendChart'); if(!ctx) return;
+  destroyChart('healthTrend');
+  const {logs,label}=getSlicedLogs(state.healthLogs,30,'healthTrend');
+  if(logs.length<2)return;
+  const mColors=['#4af0c4','#7c6af7','#f0c44a','#f06a6a','#4ab0f0','#f0784a'];
+  charts.healthTrend=new Chart(ctx,{type:'line',data:{labels:logs.map(l=>l.date.slice(5)),datasets:getEnabledMetrics().slice(0,6).map((m,i)=>({label:m.icon+' '+m.label,data:logs.map(l=>l[m.id]??null),borderColor:mColors[i],backgroundColor:mColors[i]+'20',tension:.4,fill:false,spanGaps:true,pointRadius:3,borderWidth:2}))},options:{...chartOpts('health'),scales:{x:{ticks:{color:'#7a8ba3',maxTicksLimit:10},grid:{color:'#2a3444'}},y:{min:0,max:10,ticks:{color:'#7a8ba3'},grid:{color:'#2a3444'}}}}});
+  const wrap=ctx.parentElement;if(wrap)setRangeLabel(wrap,label);
+}
+
+// ── Cycle pain chart ──────────────────────────────────────────
+function renderCyclePainChartWithOffset() {
+  const ctx=document.getElementById('cyclePainChart'); if(!ctx) return;
+  destroyChart('cyclePain');
+  const {logs,label}=getSlicedLogs(state.cycleLogs,45,'cyclePain');
+  if(logs.length<2)return;
+  charts.cyclePain=new Chart(ctx,{type:'line',data:{labels:logs.map(l=>l.date.slice(5)),datasets:[
+    {label:'🤕 Period Pain',data:logs.map(l=>l.pain||0),borderColor:'#f06a9a',backgroundColor:'rgba(240,106,154,.15)',tension:.4,fill:true,pointRadius:3,borderWidth:2},
+    {label:'🩸 Flow',data:logs.map(l=>({none:0,spotting:1,light:3,medium:6,heavy:9}[l.flow]||0)),borderColor:'#f06a6a',backgroundColor:'transparent',tension:.4,borderWidth:2,pointRadius:2,borderDash:[4,3]},
+    {label:'🫁 Bloating',data:logs.map(l=>l.bloat||0),borderColor:'#7c6af7',backgroundColor:'transparent',tension:.4,borderWidth:2,pointRadius:2},
+    {label:'😌 Mood',data:logs.map(l=>l.mood||null),borderColor:'#4af0c4',backgroundColor:'transparent',tension:.4,borderWidth:2,pointRadius:2,spanGaps:true},
+  ]},options:{...chartOpts(),scales:{x:{ticks:{color:'#7a8ba3',maxTicksLimit:10},grid:{color:'#2a3444'}},y:{min:0,max:10,ticks:{color:'#7a8ba3'},grid:{color:'#2a3444'}}}}});
+  const wrap=ctx.parentElement;if(wrap)setRangeLabel(wrap,label);
+}
+
+// ── Cycle full chart (charts page) ───────────────────────────
+function renderCycleFullChartWithOffset() {
+  const ctx=document.getElementById('cycleFullChart'); if(!ctx) return;
+  destroyChart('cycleFull');
+  const {logs,label}=getSlicedLogs(state.cycleLogs,60,'cycleFull');
+  if(logs.length<2)return;
+  charts.cycleFull=new Chart(ctx,{type:'line',data:{labels:logs.map(l=>l.date.slice(5)),datasets:[
+    {label:'🤕 Period Pain',data:logs.map(l=>l.pain||0),borderColor:'#f06a9a',backgroundColor:'rgba(240,106,154,.12)',tension:.4,fill:true,pointRadius:3,borderWidth:2},
+    {label:'🩸 Flow',data:logs.map(l=>({none:0,spotting:1,light:3,medium:6,heavy:9}[l.flow]||0)),borderColor:'#f06a6a',backgroundColor:'transparent',tension:.4,borderWidth:2,pointRadius:2,borderDash:[4,3]},
+    {label:'🫁 Bloating',data:logs.map(l=>l.bloat||0),borderColor:'#7c6af7',backgroundColor:'transparent',tension:.4,borderWidth:2,pointRadius:2},
+    {label:'😌 Mood',data:logs.map(l=>l.mood||null),borderColor:'#4af0c4',backgroundColor:'transparent',tension:.4,borderWidth:2,pointRadius:2,spanGaps:true},
+  ]},options:{...chartOpts(),scales:{x:{ticks:{color:'#7a8ba3',maxTicksLimit:12},grid:{color:'#2a3444'}},y:{min:0,max:10,ticks:{color:'#7a8ba3'},grid:{color:'#2a3444'}}}}});
+  const wrap=ctx.parentElement;if(wrap)setRangeLabel(wrap,label);
+}
+
+// ── Cycle dash chart (dashboard) ─────────────────────────────
+function renderCycleDashChartWithOffset() {
+  const ctx=document.getElementById('cycleDashChart'); if(!ctx) return;
+  destroyChart('cycleDash');
+  const {logs,label}=getSlicedLogs(state.cycleLogs,30,'cycleDash');
+  if(logs.length<2)return;
+  charts.cycleDash=new Chart(ctx,{type:'line',data:{labels:logs.map(l=>l.date.slice(5)),datasets:[
+    {label:'Period Pain',data:logs.map(l=>l.pain||0),borderColor:'#f06a9a',backgroundColor:'rgba(240,106,154,.15)',tension:.4,fill:true,pointRadius:3,borderWidth:2},
+    {label:'Flow',data:logs.map(l=>({none:0,spotting:1,light:3,medium:6,heavy:9}[l.flow]||0)),borderColor:'#f06a6a',backgroundColor:'transparent',tension:.4,borderWidth:2,pointRadius:2,borderDash:[4,2]},
+  ]},options:{...chartOpts('health'),scales:{x:{ticks:{color:'#7a8ba3',maxTicksLimit:8},grid:{color:'#2a3444'}},y:{min:0,max:10,ticks:{color:'#7a8ba3'},grid:{color:'#2a3444'}}}}});
+  const wrap=ctx.parentElement;if(wrap)setRangeLabel(wrap,label);
+}
+
+// ── Nutrition trend chart ────────────────────────────────────
+function renderNutritionTrendChartWithOffset() {
+  const ctx=document.getElementById('nutritionTrendChart'); if(!ctx) return;
+  destroyChart('nutritionTrend');
+  const {logs,label}=getSlicedLogs(state.nutritionLogs,30,'nutritionTrend');
+  if(logs.length<2)return;
+  const dims=getEnabledNutrition().slice(0,6);
+  const colors=['#f0a44a','#f06a9a','#7c6af7','#4af0c4','#f06a6a','#4ab0f0'];
+  charts.nutritionTrend=new Chart(ctx,{type:'line',data:{labels:logs.map(l=>l.date.slice(5)),datasets:dims.map((d,i)=>({label:d.icon+' '+d.label,data:logs.map(l=>l[d.id]??null),borderColor:colors[i],backgroundColor:colors[i]+'20',tension:.4,fill:false,spanGaps:true,pointRadius:3,borderWidth:2}))},options:{...chartOpts('health'),scales:{x:{ticks:{color:'#7a8ba3',maxTicksLimit:10},grid:{color:'#2a3444'}},y:{min:1,max:10,ticks:{color:'#7a8ba3'},grid:{color:'#2a3444'}}}}});
+  const wrap=ctx.parentElement;if(wrap)setRangeLabel(wrap,label);
+}
+
+// =============================================================
+// PATCH: replace all original chart renders with offset-aware versions
+// and call initChartSwipe after each page render
+// =============================================================
+// These are called by refreshPage — we patch the key chart functions
+// to use the offset-aware versions and initialise swipe
+
+
+
+
+
+
+
+
+
+
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
