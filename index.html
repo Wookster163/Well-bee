@@ -551,6 +551,80 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;hei
   background:rgba(13,17,23,.6);padding:2px 6px;border-radius:4px;
 }
 
+
+/* ═══════════════════ LIGHT MODE ═════════════════════════════ */
+body.light-mode {
+  --bg:#f5f4f0;
+  --surface:#ffffff;
+  --surface2:#f0ede8;
+  --border:#ddd8d0;
+  --text:#1a1714;
+  --text-muted:#6b6560;
+  --text-dim:#b0aaa4;
+  --accent:#1a9a7a;
+  --accent2:#5a3fc8;
+  --accent3:#d04040;
+  --accent4:#b07800;
+  --rose:#c04070;
+  --rose-dim:rgba(192,64,112,.1);
+  --rose-border:rgba(192,64,112,.25);
+  --amber:#a06010;
+  --good:#1a9a7a;
+  --warn:#b07800;
+  --bad:#d04040;
+}
+body.light-mode::before{background:radial-gradient(circle,rgba(26,154,122,.04) 0%,transparent 70%);}
+body.light-mode::after{background:radial-gradient(circle,rgba(90,63,200,.04) 0%,transparent 70%);}
+body.light-mode .sidebar{box-shadow:2px 0 12px rgba(0,0,0,.06);}
+body.light-mode .topbar{box-shadow:0 2px 12px rgba(0,0,0,.06);}
+body.light-mode .data-table tr:hover td{background:rgba(0,0,0,.025);}
+body.light-mode input[type="range"]::-webkit-slider-thumb{box-shadow:0 0 6px rgba(26,154,122,.3);}
+body.light-mode .btn-primary{background:var(--accent);color:#fff;}
+body.light-mode .btn-primary:hover{background:#158a6a;box-shadow:0 4px 18px rgba(26,154,122,.25);}
+body.light-mode .modal{box-shadow:0 20px 60px rgba(0,0,0,.15);}
+body.light-mode #navDrawer{box-shadow:4px 0 20px rgba(0,0,0,.1);}
+body.light-mode .streak-badge{background:rgba(176,120,0,.1);border-color:rgba(176,120,0,.2);}
+body.light-mode .nd-streak-num{color:var(--accent4);}
+body.light-mode .cg-head{background:var(--surface2);}
+body.light-mode .logo-title{color:var(--accent);}
+body.light-mode .nd-logo{color:var(--accent4);}
+body.light-mode .chart-swipe-btn{background:rgba(245,244,240,.9);}
+
+/* ── Theme toggle button ─────────────────────────────────────── */
+#themeToggle{
+  position:fixed;
+  bottom:max(80px, calc(80px + env(safe-area-inset-bottom)));
+  right:16px;
+  z-index:300;
+  width:48px;height:26px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:13px;
+  cursor:pointer;
+  transition:background .25s, border-color .25s;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+  padding:0;
+  display:flex;align-items:center;
+}
+#themeToggle:hover{border-color:var(--accent);}
+#themeToggle .tt-knob{
+  width:20px;height:20px;border-radius:50%;
+  background:var(--surface);
+  margin-left:2px;
+  transition:transform .25s cubic-bezier(.4,0,.2,1), background .25s;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;line-height:1;
+  box-shadow:0 1px 4px rgba(0,0,0,.2);
+  flex-shrink:0;
+}
+body.light-mode #themeToggle{background:#e0d8cc;border-color:#c8c0b4;}
+body.light-mode #themeToggle .tt-knob{transform:translateX(22px);background:#fff8f0;}
+
+/* On desktop, position above bottom nav area */
+@media(min-width:701px){
+  #themeToggle{bottom:24px;}
+}
+
 </style>
 </head>
 <body>
@@ -2685,6 +2759,7 @@ function clamp(v,min,max){return Math.max(min,Math.min(max,v));}
 // =============================================================
 function init(){
   load();seedDemoData();updateDateLabel();
+  initTheme();
   populateSubstanceDropdowns();renderEmojiGrid();renderColorGrid();
   renderDashboard();renderHealthMetricsForm();renderSymptomGrid();renderCycleSymptomGrid();renderNutritionForm();
   document.getElementById('logDate').value=dateStr();document.getElementById('logTime').value=new Date().toTimeString().slice(0,5);
@@ -5362,6 +5437,55 @@ function renderNutritionTrendChartWithOffset() {
 
 
 
+
+// =============================================================
+// THEME (light / dark)
+// =============================================================
+function applyTheme(mode) {
+  const isLight = mode === 'light';
+  document.body.classList.toggle('light-mode', isLight);
+  const knob = document.getElementById('themeKnob');
+  if (knob) knob.textContent = isLight ? '☀️' : '🌙';
+  // Re-render charts so they pick up new CSS variable colours
+  // (Chart.js reads colours at render time)
+  Object.keys(charts).forEach(k => {
+    if (charts[k]) {
+      charts[k].options.plugins.legend.labels.color = isLight ? '#6b6560' : '#7a8ba3';
+      charts[k].options.scales && Object.values(charts[k].options.scales).forEach(sc => {
+        if (sc.ticks)  sc.ticks.color  = isLight ? '#6b6560' : '#7a8ba3';
+        if (sc.grid)   sc.grid.color   = isLight ? '#ddd8d0' : '#2a3444';
+        if (sc.title)  sc.title.color  = isLight ? '#6b6560' : '#7a8ba3';
+      });
+      charts[k].update();
+    }
+  });
+}
+
+function toggleTheme() {
+  const isCurrentlyLight = document.body.classList.contains('light-mode');
+  const newMode = isCurrentlyLight ? 'dark' : 'light';
+  localStorage.setItem('wb_theme', newMode);
+  applyTheme(newMode);
+}
+
+function initTheme() {
+  // Check saved preference, then system preference
+  const saved = localStorage.getItem('wb_theme');
+  if (saved) {
+    applyTheme(saved);
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+    applyTheme('light');
+  } else {
+    applyTheme('dark');
+  }
+  // Listen for system preference changes
+  window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', e => {
+    if (!localStorage.getItem('wb_theme')) {
+      applyTheme(e.matches ? 'light' : 'dark');
+    }
+  });
+}
+
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 }
@@ -5439,6 +5563,12 @@ init();
     </div>
   </div>
 </div>
+
+
+<!-- Theme toggle -->
+<button id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark mode" aria-label="Toggle theme">
+  <div class="tt-knob" id="themeKnob">🌙</div>
+</button>
 
 </body>
 </html>
