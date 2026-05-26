@@ -3785,7 +3785,13 @@ function importOtherApp(ev) {
         const json = JSON.parse(raw);
         parsed = detectAndMapJSON(json, file.name);
       }
-      if (!parsed) {
+      // Special case: settings file loaded
+      if (parsed._isSettingsFile) {
+        showToast('Zyklusdaten settings loaded ✓ — now upload your Zyklusdaten cycle backup', 'success');
+        showToast(`${parsed._settingsLoaded} trackable names loaded — now import your cycle data file`);
+        return;
+      }
+    if (!parsed) {
         showToast('Could not parse file — format not recognised ⚠', 'warn');
         return;
       }
@@ -3819,178 +3825,408 @@ function detectAndMapJSON(json, filename) {
   }
 
   // ── Zyklusdaten (German NFP app) ──────────────────────────
-  // Format: { c1: { cycles: [{ days: [...] }] }, c2: {...}, ... }
-  // Each day has: date, bleeding, temperature, trackables, comment, medication, mucus
+  // Detected by: top-level keys matching /^c\d+$/ with .cycles array
+  // Supports: cycle data file alone, OR cycle + settings file together
   const zyklusKeys = Object.keys(json).filter(k => /^c\d+$/.test(k));
   if (zyklusKeys.length > 0 && json[zyklusKeys[0]]?.cycles) {
     result.appName = 'Zyklusdaten (NFP)';
 
-    // Bleeding code → Well-bee flow
-    const bleedMap = { ST:'heavy', MR:'medium', WE:'light', SP:'spotting', NO:'none', '':'none' };
+    // ── Read trackableRenames from embedded settings (if present) ──
+    // User can also load the Einstellungen-Backup.json first to set renames
+    const renames = json._settings?.trackableRenames
+      || window._zyklusSettings?.trackableRenames
+      || {};
 
-    // Mood codes → numeric
-    const moodMap = { HAP:9, GUT:8, GOO:8, NEU:5, SAD:3, TIR:3, IRR:3, ANG:2, CRY:2 };
+    // ── Substance trackable keys (taken/slider/val/done/text/letters/emoji/amountp/pain/meno) ──
+    // These represent supplement/medication intake
+    const SUBSTANCE_KEY_PATTERNS = /^(taken|slider|val|done|text|letters|emoji|amountp|meno|pain)\d*$/;
 
-    // Trackable → symptom label
-    const trackableLabels = {
-      headache:'Headache', kopfschmerz:'Headache',
-      uls:'Cervical mucus', zervix:'Cervix',
-      libido:'Libido', lust:'Libido',
-      darm:'Gut issues', verdauung:'Gut issues',
-      schmerz:'Cramps', bauchweh:'Cramps',
-      ruecken:'Back pain', rücken:'Back pain',
-      brust:'Breast tenderness',
-      schwindel:'Dizziness', migräne:'Migraine',
-      müdigkeit:'Fatigue', sport:'Exercise',
-      stress:'Stress', krank:'Illness',
+    // ── Health trackable keys (unmapped by user = internal health metrics) ──
+    const HEALTH_TRACKABLES = {
+      digestion:     { metric:'gut',      label:'Gut Health',      icon:'🫁' },
+      skin:          { metric:'skin',     label:'Skin',            icon:'🪷' },
+      mood:          { metric:'mood',     label:'Mood',            icon:'😌' },
+      headache:      { metric:'headache', label:'Headache',        icon:'🌀' },
+      hunger:        { metric:'appetite', label:'Appetite',        icon:'🍽' },
+      libido:        { metric:'libido',   label:'Libido',          icon:'💗' },
+      uls:           { metric:'cervix',   label:'Cervical Mucus',  icon:'💧' },
+      intensity:     { metric:'hwk',      label:'HW-Klebegefühl',  icon:'🫧' },
+      intensity2:    { metric:'schwindel',label:'Schwindel',       icon:'😵' },
+      sleepduration: { metric:'sleep',    label:'Sleep Duration',  icon:'😴' },
     };
 
+    // ── Value decoders ────────────────────────────────────────
+    // Convert Zyklusdaten trackable values → Well-bee 1-10 scale or boolean
+    function decodeTrackableValue(key, val) {
+      if (val === null || val === undefined) return null;
+
+      // Boolean fields (taken1/2/3/4, done, goal, etc.) — "ja"=taken, any truthy=taken
+      const boolPatterns = /^(taken|done|goal|emoji|meno|text|letters|amountp)\d*$/;
+      if (boolPatterns.test(key)) {
+        if (typeof val === 'boolean') return val ? 'taken' : null;
+        const s = val.toString().toLowerCase();
+        if (s === 'ja' || s === 'yes' || s === 'true' || s === 'j') return 'taken';
+        if (s === 'nein' || s === 'no' || s === 'false' || s === 'n') return null;
+        // Any non-empty non-negative value = taken (including text values like "se", "SE")
+        return s ? 'taken' : null;
+      }
+
+      // Slider fields — numeric dose count (1, 2, 3...)
+      if (/^slider\d+$/.test(key)) {
+        const n = parseFloat(val);
+        return isNaN(n) ? (val ? 'taken' : null) : (n > 0 ? n : null);
+      }
+
+      // Val fields — numeric dose
+      if (/^val\d+$/.test(key)) {
+        const n = parseFloat(val);
+        if (!isNaN(n)) return n > 0 ? n : null;
+        // val2 uses special codes: "se"=Selen 100ug, "SE"=Selen 200ug
+        return val ? 'taken' : null;
+      }
+
+      // Pain field — complex string codes
+      // "ja"=Glutamin, "nein"=kein Glutamin, "R"=Ribose, "L"=Lysin, etc.
+      if (key === 'pain') {
+        return val ? 'taken' : null;
+      }
+
+      // Health metric fields — map to 1-10
+      if (key === 'digestion' || key === 'skin') {
+        // These are typically 1-5 or categorical
+        const n = parseFloat(val);
+        if (!isNaN(n)) return Math.min(10, Math.round(n * 2)); // 1-5 → 2-10
+        const s = val.toString().toLowerCase();
+        if (s.includes('gut') || s.includes('good') || s === 'g') return 8;
+        if (s.includes('ok') || s === 'o') return 5;
+        if (s.includes('schlecht') || s.includes('bad') || s === 'b') return 2;
+        return 5;
+      }
+
+      if (key === 'mood') {
+        const moodMap = {HAP:9,GUT:8,GOO:8,NEU:5,OK:5,TIR:4,SAD:3,IRR:3,ANG:2,CRY:2};
+        const arr = Array.isArray(val) ? val : [val];
+        const scores = arr.map(m => moodMap[m.toUpperCase()] || 5);
+        return Math.round(scores.reduce((a,b)=>a+b)/scores.length);
+      }
+
+      if (key === 'headache') {
+        const s = val.toString().toUpperCase();
+        return s==='D'?6 : s==='ST'?9 : s==='LE'?3 : 5;
+      }
+
+      if (key === 'libido') {
+        const s = val.toString().toUpperCase();
+        return s==='H'?8 : s==='M'?5 : s==='L'?2 : 5;
+      }
+
+      if (key === 'hunger') {
+        const n = parseFloat(val);
+        return !isNaN(n) ? Math.min(10, n*2) : 5;
+      }
+
+      if (key === 'sleepduration') {
+        // Hours slept — map to quality proxy (7-8h=good)
+        const n = parseFloat(val);
+        if (isNaN(n)) return null;
+        return n>=8?9 : n>=7?7 : n>=6?5 : n>=5?3 : 2;
+      }
+
+      if (key === 'uls' || key === 'intensity' || key === 'intensity2') {
+        const s = val.toString().toUpperCase();
+        return s==='S'?7 : s==='H'?9 : s==='M'?5 : s==='L'?3 : 5;
+      }
+
+      return val ? 'taken' : null;
+    }
+
+    // ── Bleeding code → Well-bee flow ─────────────────────────
+    const bleedMap = {ST:'heavy',MR:'medium',WE:'light',SP:'spotting',NO:'none','':'none'};
+
+    // ── Phase estimation ──────────────────────────────────────
+    function estimateZyklusPhase(dayNr, cycleLen, lutealLen, bleeding) {
+      if (bleeding && bleeding !== 'NO' && dayNr <= Math.min(7, cycleLen/5)) return 'menstrual';
+      const lutealStart = cycleLen - lutealLen;
+      if (dayNr > lutealStart) return 'luteal';
+      if (dayNr >= lutealStart - 3) return 'ovulation';
+      return 'follicular';
+    }
+
+    // ── Build substance registry from renames ─────────────────
+    const subRegistry = {}; // key → substance object
+    Object.entries(renames).forEach(([key, fullName]) => {
+      if (!SUBSTANCE_KEY_PATTERNS.test(key)) return;
+      // Strip emoji and extra info for clean name
+      const cleanName = fullName.replace(/^[🔄🧠🔥]\s*/,'').split('|')[0].trim();
+      const sub = {
+        id: 'zyk_sub_' + key,
+        name: cleanName,
+        category: guessCategory(cleanName),
+        emoji: guessEmoji(cleanName),
+        color: hashColor(key),
+        defaultDose: '',
+        notes: fullName !== cleanName ? fullName : '',
+        createdAt: new Date().toISOString(),
+      };
+      subRegistry[key] = sub;
+      result.substances.push(sub);
+    });
+
+    // Helper: guess category from name
+    function guessCategory(name) {
+      const n = name.toLowerCase();
+      if (/vitamin|vit\s*[a-e]|d3|k2/i.test(n)) return 'Vitamin';
+      if (/magnesium|zink|eisen|kupfer|jod|selen|mineral/i.test(n)) return 'Mineral';
+      if (/omega|ω|fish|fisch|öl|oil/i.test(n)) return 'Supplement';
+      if (/curcumin|taurin|carnitin|q10|lipoic|liponsäure|coenzym/i.test(n)) return 'Supplement';
+      if (/probiotic|omnibiotic|bifidum|lactobacillus/i.test(n)) return 'Probiotic';
+      if (/löwenzahn|basenpulver|botanical|herb/i.test(n)) return 'Herb / Botanical';
+      if (/glutamin|glycin|lysin|amino|ribose|htp/i.test(n)) return 'Amino Acid';
+      if (/ibu|paracetamol|aspirin|tablette/i.test(n)) return 'OTC Drug';
+      return 'Supplement';
+    }
+
+    function guessEmoji(name) {
+      const n = name.toLowerCase();
+      if (/omega|ω|fish|fisch|öl/i.test(n)) return '🌊';
+      if (/magnesium/i.test(n)) return '🌙';
+      if (/vitamin d|d3/i.test(n)) return '☀️';
+      if (/zink/i.test(n)) return '⚡';
+      if (/eisen/i.test(n)) return '🔴';
+      if (/curcumin/i.test(n)) return '🌿';
+      if (/q10/i.test(n)) return '💎';
+      if (/taurin/i.test(n)) return '🧬';
+      if (/probiotic|omnibiotic/i.test(n)) return '🫧';
+      if (/löwenzahn/i.test(n)) return '🌱';
+      if (/basenpulver/i.test(n)) return '⚗️';
+      if (/carnitin/i.test(n)) return '🔥';
+      if (/jod/i.test(n)) return '🧪';
+      if (/htp|serotonin/i.test(n)) return '🧠';
+      if (/vitamin e/i.test(n)) return '🌸';
+      if (/liponsäure/i.test(n)) return '✨';
+      return '💊';
+    }
+
+    function hashColor(key) {
+      const colors = ['#4af0c4','#7c6af7','#f06a6a','#f0c44a','#4ab0f0','#f06a9a',
+                      '#f0784a','#b0f04a','#f04ac4','#4a70f0','#c4f04a','#fa8080',
+                      '#80c4fa','#fac480','#c480fa','#80faC4'];
+      let h = 0;
+      for (let i=0;i<key.length;i++) h = (h*31+key.charCodeAt(i)) % colors.length;
+      return colors[Math.abs(h)];
+    }
+
+    // ── Main day loop ─────────────────────────────────────────
     zyklusKeys.forEach(catKey => {
       const catalog = json[catKey];
-      (catalog.cycles || []).forEach((cycle, cycleIdx) => {
-        const cycleStartDate = cycle.startDate;
-        const cycleLen = cycle.cycleLength || 28;
-        const lutealLen = cycle.lutealLength || 14;
+      (catalog.cycles || []).forEach(cycle => {
+        const cycleLen    = cycle.cycleLength || 28;
+        const lutealLen   = cycle.lutealLength || 14;
 
         (cycle.days || []).forEach(day => {
-          const date = day.date;
+          const date  = day.date;
           const dayNr = day.nr || 1;
           if (!date) return;
 
-          // ── Determine phase from cycle day number ──────────
-          let phase = 'follicular';
-          if (dayNr <= 5 && (day.bleeding && day.bleeding !== 'NO')) phase = 'menstrual';
-          else if (dayNr >= cycleLen - lutealLen) phase = 'luteal';
-          else if (dayNr >= cycleLen - lutealLen - 3 && dayNr < cycleLen - lutealLen) phase = 'ovulation';
+          const trackables   = day.trackables || {};
+          const flow         = bleedMap[day.bleeding || ''] || 'none';
+          const isBleeding   = flow !== 'none';
+          const phase        = estimateZyklusPhase(dayNr, cycleLen, lutealLen, day.bleeding);
 
-          // ── Cycle log ─────────────────────────────────────
-          const flow = bleedMap[day.bleeding || ''] || 'none';
-          const isBleeding = flow !== 'none';
+          // ── Parse all trackables ──────────────────────────
+          const healthUpdate  = {}; // metric → value
+          const symptoms      = [];
+          const takenSubKeys  = []; // substance keys taken today
 
-          // Gather symptoms from trackables
-          const symptoms = [];
-          const trackables = day.trackables || {};
-          Object.keys(trackables).forEach(key => {
-            const label = trackableLabels[key.toLowerCase()];
-            if (label && !symptoms.includes(label)) symptoms.push(label);
+          Object.entries(trackables).forEach(([key, rawVal]) => {
+            const decoded = decodeTrackableValue(key, rawVal);
+            if (decoded === null) return;
+
+            // Is this a substance key?
+            if (SUBSTANCE_KEY_PATTERNS.test(key)) {
+              if (subRegistry[key]) {
+                takenSubKeys.push({ key, decoded });
+              } else if (decoded === 'taken' || typeof decoded === 'number') {
+                // Substance key with no rename — create generic substance
+                const fallbackName = renames[key] || key;
+                if (!subRegistry[key]) {
+                  const sub = {
+                    id: 'zyk_sub_' + key,
+                    name: fallbackName,
+                    category: 'Supplement',
+                    emoji: '💊',
+                    color: hashColor(key),
+                    defaultDose: '',
+                    notes: 'Imported from Zyklusdaten',
+                    createdAt: new Date().toISOString(),
+                  };
+                  subRegistry[key] = sub;
+                  result.substances.push(sub);
+                }
+                takenSubKeys.push({ key, decoded });
+              }
+              return;
+            }
+
+            // Is it a health trackable?
+            const healthDef = HEALTH_TRACKABLES[key];
+            if (healthDef && typeof decoded === 'number') {
+              healthUpdate[healthDef.metric] = decoded;
+              return;
+            }
+
+            // Special: mood array
+            if (key === 'mood' && typeof decoded === 'number') {
+              healthUpdate['mood'] = decoded;
+              // Also add mood-based symptoms
+              const moodArr = Array.isArray(rawVal) ? rawVal : [rawVal];
+              if (moodArr.includes('TIR')) symptoms.push('Fatigue');
+              if (moodArr.includes('IRR')) symptoms.push('Irritability');
+              if (moodArr.includes('ANG')) symptoms.push('Anxiety');
+              return;
+            }
+
+            if (key === 'headache' && decoded) {
+              symptoms.push('Headache');
+              healthUpdate['headache'] = decoded;
+              return;
+            }
+
+            // goal = Histaminarm ernährt
+            if (key === 'goal' && decoded === 'taken') {
+              symptoms.push('Low histamine day ✓');
+              return;
+            }
+
+            // intensity2 = Schwindel
+            if (key === 'intensity2' && decoded) {
+              symptoms.push('Schwindel');
+              return;
+            }
+
+            // intensity = HW-Klebegefühl
+            if (key === 'intensity' && decoded) {
+              symptoms.push('HW-Klebegefühl');
+              return;
+            }
+
+            // Unrecognised — track as unmapped only if truly unknown
+            if (!result.unmapped.includes(key)) {
+              result.unmapped.push('trackable: ' + key);
+            }
           });
 
-          // Interference → notes
-          const interferenceLabelMap = {
+          // ── Headache from comment ─────────────────────────
+          if (day.comment && /schmerz|kopfweh|migräne|weh/i.test(day.comment)) {
+            if (!symptoms.includes('Headache')) symptoms.push('Headache');
+          }
+
+          // ── Interference → note ───────────────────────────
+          const interferenceMap = {
             SLEEP_LATE:'Late sleep', LATE_MEASURE:'Late measurement',
             PARTY:'Party night', MEASURE_ERROR:'Measurement error',
             ALCOHOL:'Alcohol', SICK:'Sick', TRAVEL:'Travel',
           };
-          const interfNotes = (day.interference || [])
-            .map(i => interferenceLabelMap[i] || i).join(', ');
+          const interfNote = (day.interference || [])
+            .map(i => interferenceMap[i] || i).join(', ');
 
-          // Mood from trackables
-          let mood = 5;
-          if (trackables.mood) {
-            const moodArr = Array.isArray(trackables.mood) ? trackables.mood : [trackables.mood];
-            const moodVals = moodArr.map(m => moodMap[m] || 5);
-            mood = Math.round(moodVals.reduce((a,b)=>a+b,0) / moodVals.length);
-          }
+          const notes = [day.comment||'', interfNote].filter(Boolean).join(' | ');
 
-          // Pain from trackables or comment
-          let pain = 0;
-          if (trackables.schmerz || trackables.bauchweh ||
-              (day.comment && /schmerz|bauchweh|weh|pain|cramp/i.test(day.comment))) {
-            pain = trackables.schmerz === 'D' ? 8 : 5;
-          }
-          if (trackables.headache === 'D') {
-            if (!symptoms.includes('Headache')) symptoms.push('Headache');
-          }
-
+          // ── Cycle log ─────────────────────────────────────
           result.cycleLogs.push({
-            id: 'zyk_' + date,
-            date,
-            time: day.measureTime || '08:00',
+            id: 'zyk_c_' + date,
+            date, time: day.measureTime || '08:00',
             ts: date + 'T08:00:00.000Z',
-            cycleDayNum: dayNr,
-            phase,
-            flow,
-            pain,
+            cycleDayNum: dayNr, phase, flow,
+            pain: healthUpdate['headache'] ? 0 : (healthUpdate['pain'] || 0),
             bloat: 0,
-            mood,
-            symptoms,
-            notes: [day.comment || '', interfNotes].filter(Boolean).join(' | '),
+            mood: healthUpdate['mood'] || 5,
+            symptoms, notes,
           });
 
-          // ── Health log (temperature + general wellbeing) ───
-          // Temperature: stored as integer in 1/100°C (3690 = 36.90°C)
-          const hasTemp = day.temperature != null;
-          const hasMood = trackables.mood != null;
-          const hasMedication = !!day.medication;
+          // ── Health log ────────────────────────────────────
+          const hasTemp  = day.temperature != null;
+          const hasHealth= Object.keys(healthUpdate).length > 0 || hasTemp;
 
-          if (hasTemp || hasMood || hasMedication) {
+          if (hasHealth) {
             const hl = {
               id: 'zyk_h_' + date,
-              date,
-              time: day.measureTime || '09:00',
+              date, time: day.measureTime || '09:00',
               ts: date + 'T09:00:00.000Z',
-              symptoms: [...symptoms],
-              notes: day.comment || '',
+              symptoms: [...symptoms], notes,
             };
-
-            // Temperature stored as basal body temp — map to a "wellness" proxy
-            // 36.5-36.7 = normal low phase, 36.8-37.2 = high phase — not directly a 1-10 health score
-            // Store the raw temp in notes for reference
+            Object.assign(hl, healthUpdate);
             if (hasTemp) {
               const tempC = day.temperature / 100;
-              hl.notes = [hl.notes, `BBT: ${tempC.toFixed(2)}°C`].filter(Boolean).join(' | ');
+              hl.notes = [hl.notes, 'BBT: ' + tempC.toFixed(2) + '°C'].filter(Boolean).join(' | ');
             }
-
-            if (hasMood) hl.mood = mood;
-            if (pain > 0) hl.pain = pain;
-
-            // Medication → substance log
-            if (hasMedication) {
-              // Try to find or create a substance for this medication
-              const medName = day.medication;
-              let sub = result.substances.find(s => s.name === medName);
-              if (!sub) {
-                sub = {
-                  id: 'zyk_sub_' + medName.replace(/\s+/g,'_').toLowerCase(),
-                  name: medName,
-                  category: 'Medication (Rx)',
-                  emoji: '💊',
-                  color: '#f06a6a',
-                  defaultDose: '',
-                  notes: 'Imported from Zyklusdaten',
-                  createdAt: new Date().toISOString(),
-                };
-                result.substances.push(sub);
-              }
-              result.logs.push({
-                id: 'zyk_log_' + date + '_' + medName.replace(/\s+/g,'_'),
-                substanceId: sub.id,
-                dose: 1,
-                unit: 'tablet',
-                date,
-                time: '12:00',
-                tod: 'With lunch',
-                notes: 'Imported from Zyklusdaten',
-                ts: date + 'T12:00:00.000Z',
-              });
-            }
-
             result.healthLogs.push(hl);
           }
 
-          // Track unmapped trackable keys
-          Object.keys(trackables).forEach(k => {
-            if (!trackableLabels[k.toLowerCase()] && k !== 'mood' &&
-                !result.unmapped.includes(k)) {
-              result.unmapped.push('trackable: ' + k);
+          // ── Medication from day.medication field ──────────
+          if (day.medication) {
+            const medName = day.medication;
+            let sub = result.substances.find(s => s.name === medName);
+            if (!sub) {
+              sub = {
+                id: 'zyk_med_' + medName.replace(/\s+/g,'_').toLowerCase().slice(0,20),
+                name: medName, category:'OTC Drug', emoji:'💊',
+                color:'#f06a6a', defaultDose:'', notes:'Imported from Zyklusdaten',
+                createdAt: new Date().toISOString(),
+              };
+              result.substances.push(sub);
             }
-          });
-        });
-      });
-    });
+            result.logs.push({
+              id: 'zyk_mlog_' + date + '_' + sub.id,
+              substanceId: sub.id, dose:1, unit:'tablet',
+              date, time:'12:00', tod:'With lunch',
+              notes:'From Zyklusdaten medication field',
+              ts: date + 'T12:00:00.000Z',
+            });
+          }
 
-    // Summary stats
-    console.log(`[Zyklusdaten] Imported: ${result.cycleLogs.length} cycle days, ${result.healthLogs.length} health logs, ${result.substances.length} medications, ${result.logs.length} medication logs`);
+          // ── Substance intake logs ─────────────────────────
+          takenSubKeys.forEach(({ key, decoded }) => {
+            const sub = subRegistry[key];
+            if (!sub) return;
+            const dose  = typeof decoded === 'number' ? decoded : 1;
+            const unit  = typeof decoded === 'number' ? 'tablet' : 'tablet';
+            result.logs.push({
+              id: 'zyk_log_' + date + '_' + key,
+              substanceId: sub.id,
+              dose, unit, date,
+              time: day.measureTime || '08:00',
+              tod: 'Morning',
+              notes: '',
+              ts: date + 'T08:00:00.000Z',
+            });
+          });
+
+        }); // end day loop
+      }); // end cycle loop
+    }); // end catalog loop
+
+    // Deduplicate unmapped
+    result.unmapped = [...new Set(result.unmapped)];
+
+    console.log('[Zyklusdaten] cycle logs:', result.cycleLogs.length,
+      'health logs:', result.healthLogs.length,
+      'substances:', result.substances.length,
+      'intake logs:', result.logs.length,
+      'unmapped:', result.unmapped.length);
+
+    return result;
+  }
+
+  // ── Zyklusdaten SETTINGS file ─────────────────────────────
+  // If user uploads Einstellungen-Backup.json, store renames for next import
+  if (json._meta?.appVersion && json.settings?.ui?.dayEntryPreferences?.trackableRenames) {
+    window._zyklusSettings = json.settings.ui.dayEntryPreferences;
+    result.appName = 'Zyklusdaten Settings';
+    result.unmapped = [];
+    // Special result: signal to UI that this was a settings file
+    result._isSettingsFile = true;
+    result._settingsLoaded = Object.keys(json.settings.ui.dayEntryPreferences.trackableRenames).length;
     return result;
   }
 
@@ -3998,6 +4234,7 @@ function detectAndMapJSON(json, filename) {
   // Clue exports as { cycles: [...], entries: [...] }
   if (json.cycles || json.entries) {
     result.appName = 'Clue';
+
     const entries = json.entries || json.data || [];
     entries.forEach(entry => {
       const date = entry.date || entry.day;
