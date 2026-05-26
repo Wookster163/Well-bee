@@ -514,6 +514,18 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;hei
 .grid-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--text-muted);margin-top:10px;padding:8px 0;}
 .grid-legend-item{display:flex;align-items:center;gap:5px;}
 
+
+/* ═══════════════════ WEATHER / ENVIRONMENT ══════════════════ */
+.weather-badge{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:10px;border:1px solid var(--border);}
+.weather-badge .wb-icon{font-size:24px;}
+.weather-badge .wb-temp{font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:var(--accent);}
+.weather-badge .wb-desc{font-size:12px;color:var(--text-muted);}
+.weather-badge .wb-moon{font-size:20px;margin-left:auto;}
+.weather-status{font-size:11px;color:var(--text-muted);margin-top:4px;min-height:16px;}
+.weather-status.loading{color:var(--accent2);}
+.weather-status.error{color:var(--bad);}
+.weather-status.ok{color:var(--good);}
+
 </style>
 </head>
 <body>
@@ -1262,6 +1274,47 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;hei
         </div>
       </div>
       <div class="card">
+        <div class="card-title">🌍 Location & Environment</div>
+        <div class="notice notice-muted" style="margin-bottom:12px">
+          <span>ℹ</span><span>Used to fetch today's weather when you log health data. Stored only on this device.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">City / Location Name</label>
+          <input type="text" class="form-input" id="settingsCity" placeholder="e.g. Regensburg" oninput="saveLocationSettings()">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Latitude</label>
+            <input type="number" class="form-input" id="settingsLat" placeholder="49.0134" step="0.0001" oninput="saveLocationSettings()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Longitude</label>
+            <input type="number" class="form-input" id="settingsLon" placeholder="12.1016" step="0.0001" oninput="saveLocationSettings()">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <button class="btn btn-ghost" style="flex:1" onclick="detectLocation()">📍 Detect My Location</button>
+          <button class="btn btn-ghost" style="flex:1" onclick="testWeatherFetch()">🌤 Test Weather</button>
+        </div>
+        <div id="locationStatus" class="weather-status"></div>
+        <div id="weatherPreview"></div>
+        <div class="form-group" style="margin-top:10px">
+          <label class="form-label">Temperature Unit</label>
+          <select class="form-select" id="settingsTempUnit" onchange="saveLocationSettings()">
+            <option value="celsius">°C — Celsius</option>
+            <option value="fahrenheit">°F — Fahrenheit</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="display:flex;align-items:center;justify-content:space-between;">
+            Auto-fetch weather on log
+            <input type="checkbox" id="settingsAutoWeather" onchange="saveLocationSettings()" style="accent-color:var(--accent);width:16px;height:16px">
+          </label>
+          <div class="form-hint">Attach weather + moon phase when saving health or cycle logs</div>
+        </div>
+      </div>
+
+      <div class="card">
         <div class="card-title">🗄 Data Management</div>
         <div class="form-group"><button class="btn btn-ghost" style="width:100%" onclick="exportData()">⬇ Export All JSON</button></div>
         <div class="form-group"><label class="btn btn-ghost" style="width:100%;justify-content:center;cursor:pointer">⬆ Import Well-bee JSON<input type="file" accept=".json" style="display:none" onchange="importData(event)"></label></div>
@@ -1757,12 +1810,33 @@ function saveLog(){
 function saveHealthLog(){
   const entry={id:'hl_'+Date.now(),date:dateStr(),time:new Date().toTimeString().slice(0,5),ts:new Date().toISOString(),symptoms:[...activeSymptoms],notes:document.getElementById('healthNotes').value.trim()};
   getEnabledMetrics().forEach(m=>{const el=document.getElementById('metric_'+m.id);if(el)entry[m.id]=parseInt(el.value);});
-  state.healthLogs.push(entry);save();activeSymptoms=[];showToast('Health metrics saved ✓');renderHealthMetricsForm();renderSymptomGrid();document.getElementById('healthNotes').value='';
+  // attach weather/moon (fire-and-forget with fallback)
+  attachWeatherToLog(entry).then(()=>{
+    state.healthLogs.push(entry);save();activeSymptoms=[];
+    showToast('Health metrics saved ✓'+(entry.env?.weatherIcon?' '+entry.env.weatherIcon+' '+entry.env.temp+entry.env.tempUnit:entry.env?.moonIcon?' '+entry.env.moonIcon:''));
+    renderHealthMetricsForm();renderSymptomGrid();
+    const _hn=document.getElementById('healthNotes');if(_hn)_hn.value='';
+  });
+  // prevent original showToast from running by returning early via then()
+  return;
+  showToast('Health metrics saved ✓');renderHealthMetricsForm();renderSymptomGrid();document.getElementById('healthNotes').value='';
 }
 
 function saveCycleLog(){
   const entry={id:'cl_'+Date.now(),date:document.getElementById('cycleDate').value,time:new Date().toTimeString().slice(0,5),ts:new Date().toISOString(),cycleDayNum:parseInt(document.getElementById('cycleDayNum').value)||null,phase:document.getElementById('cyclePhase').value,flow:selectedFlow,pain:parseInt(document.getElementById('cyclePain').value),bloat:parseInt(document.getElementById('cycleBloat').value),mood:parseInt(document.getElementById('cycleMood').value),symptoms:[...activeCycleSymptoms],notes:document.getElementById('cycleNotes').value.trim()};
-  state.cycleLogs.push(entry);save();activeCycleSymptoms=[];selectedFlow='none';showToast('Cycle log saved 🌸');
+  attachWeatherToLog(entry).then(()=>{
+    state.cycleLogs.push(entry);save();activeCycleSymptoms=[];selectedFlow='none';
+    showToast('Cycle log saved 🌸'+(entry.env?.moonIcon?' '+entry.env.moonIcon:''));
+    document.querySelectorAll('.flow-btn').forEach(b=>b.classList.remove('active'));
+    const _cp=document.getElementById('cyclePain');if(_cp)_cp.value=0;
+    const _cpv=document.getElementById('cyclePainVal');if(_cpv)_cpv.textContent='0';
+    const _cb=document.getElementById('cycleBloat');if(_cb)_cb.value=0;
+    const _cbv=document.getElementById('cycleBloatVal');if(_cbv)_cbv.textContent='0';
+    const _cm=document.getElementById('cycleMood');if(_cm)_cm.value=5;
+    const _cmv=document.getElementById('cycleMoodVal');if(_cmv)_cmv.textContent='5';
+    const _cn=document.getElementById('cycleNotes');if(_cn)_cn.value='';
+    renderCycleSymptomGrid();renderRecentCycleLogs();renderCycleCalendar('cycleCalendar',1);
+  });return;
   document.querySelectorAll('.flow-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('cyclePain').value=0;document.getElementById('cyclePainVal').textContent='0';
   document.getElementById('cycleBloat').value=0;document.getElementById('cycleBloatVal').textContent='0';
@@ -2417,6 +2491,17 @@ function renderInsights(){
 // SETTINGS
 // =============================================================
 function renderSettings(){
+  const loc=state.settings.location||{};
+  const _sc=document.getElementById('settingsCity');
+  const _sl=document.getElementById('settingsLat');
+  const _sn=document.getElementById('settingsLon');
+  const _st=document.getElementById('settingsTempUnit');
+  const _sa=document.getElementById('settingsAutoWeather');
+  if(_sc)_sc.value=loc.city||'';
+  if(_sl)_sl.value=loc.lat||'';
+  if(_sn)_sn.value=loc.lon||'';
+  if(_st)_st.value=loc.tempUnit||'celsius';
+  if(_sa)_sa.checked=loc.autoWeather!==false;
   // Health metrics
   const el=document.getElementById('metricsSettings');
   if(el)el.innerHTML=state.settings.metrics.map(m=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px">${m.icon}</span><span style="font-size:12px">${m.label}</span>${!m.builtin?`<span class="pill pill-gray" style="font-size:10px">custom</span>`:''}</div><div style="display:flex;gap:5px;align-items:center">${!m.builtin?`<button class="btn btn-danger btn-sm" onclick="removeCustomMetric('${m.id}')">×</button>`:''}<input type="checkbox" ${state.settings.enabledMetrics.includes(m.id)?'checked':''} onchange="toggleMetric('${m.id}',this.checked)" style="accent-color:var(--accent);width:15px;height:15px"></div></div>`).join('');
@@ -2466,7 +2551,7 @@ function downloadSubstances(){const b=new Blob([JSON.stringify(state.substances,
 function importSubstances(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{try{const d=JSON.parse(e.target.result);if(!Array.isArray(d))throw 0;let n=0;d.forEach(s=>{if(!state.substances.find(x=>x.id===s.id)){state.substances.push(s);n++;}});save();renderSubstances();populateSubstanceDropdowns();showToast(`Imported ${n} substance(s) ✓`);}catch{showToast('Invalid file ⚠','warn');}};r.readAsText(f);ev.target.value='';}
 function exportData(){const b=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='vitalog_export_'+dateStr()+'.json';a.click();showToast('Exported ✓');}
 function importData(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{try{state=JSON.parse(e.target.result);save();showToast('Imported ✓');refreshPage(currentPage);populateSubstanceDropdowns();}catch{showToast('Invalid file ⚠','warn');}};r.readAsText(f);ev.target.value='';}
-function clearAllData(){if(!confirm('Delete ALL data? This cannot be undone.'))return;state={substances:[],logs:[],healthLogs:[],cycleLogs:[],nutritionLogs:[],settings:{metrics:JSON.parse(JSON.stringify(DEFAULT_METRICS)),nutrition:JSON.parse(JSON.stringify(DEFAULT_NUTRITION)),cycleSymptoms:[...DEFAULT_CYCLE_SYMPTOMS],enabledMetrics:DEFAULT_METRICS.map(m=>m.id),enabledNutrition:DEFAULT_NUTRITION.map(n=>n.id)}};save();showToast('Data cleared');renderDashboard();}
+function clearAllData(){if(!confirm('Delete ALL data? This cannot be undone.'))return;state={substances:[],logs:[],healthLogs:[],cycleLogs:[],nutritionLogs:[],settings:{metrics:JSON.parse(JSON.stringify(DEFAULT_METRICS)),nutrition:JSON.parse(JSON.stringify(DEFAULT_NUTRITION)),cycleSymptoms:[...DEFAULT_CYCLE_SYMPTOMS],enabledMetrics:DEFAULT_METRICS.map(m=>m.id),enabledNutrition:DEFAULT_NUTRITION.map(n=>n.id),location:{city:'',lat:null,lon:null,tempUnit:'celsius',autoWeather:true}}};save();showToast('Data cleared');renderDashboard();}
 
 // =============================================================
 // MODALS
@@ -3759,6 +3844,7 @@ function renderCycleGrid(){
   }
 
   table.innerHTML = headRow + '<tbody>' + rows + '</tbody>';
+  setTimeout(injectMoonRow,0);
 }
 
 function dateStr_g(d){ return d.toISOString().slice(0,10); }
@@ -4164,25 +4250,9 @@ function detectAndMapJSON(json, filename) {
           }
 
           // ── Medication from day.medication field ──────────
+          // Free text like "300mg Ibu (Kater) + 20mg Panto" or "2x Naproxen zum Schlafen"
           if (day.medication) {
-            const medName = day.medication;
-            let sub = result.substances.find(s => s.name === medName);
-            if (!sub) {
-              sub = {
-                id: 'zyk_med_' + medName.replace(/\s+/g,'_').toLowerCase().slice(0,20),
-                name: medName, category:'OTC Drug', emoji:'💊',
-                color:'#f06a6a', defaultDose:'', notes:'Imported from Zyklusdaten',
-                createdAt: new Date().toISOString(),
-              };
-              result.substances.push(sub);
-            }
-            result.logs.push({
-              id: 'zyk_mlog_' + date + '_' + sub.id,
-              substanceId: sub.id, dose:1, unit:'tablet',
-              date, time:'12:00', tod:'With lunch',
-              notes:'From Zyklusdaten medication field',
-              ts: date + 'T12:00:00.000Z',
-            });
+            parseMedicationText(day.medication, date, result);
           }
 
           // ── Substance intake logs ─────────────────────────
@@ -4205,6 +4275,146 @@ function detectAndMapJSON(json, filename) {
         }); // end day loop
       }); // end cycle loop
     }); // end catalog loop
+
+    // ── Free-text medication parser ───────────────────────────
+    // Handles patterns like:
+    //   "300mg Ibu (Kater) + 20mg Panto"
+    //   "1200mg Ibu nach Commotio"
+    //   "2x Naproxen zum Schlafen (wieder bisl mehr Bauchweh, ca 6)"
+    //   "Ibu 600"
+    //   "Paracetamol 500mg + Ibu 400mg (Migräne)"
+    function parseMedicationText(rawText, date, res) {
+      // Known substance aliases → canonical name + category + emoji
+      const KNOWN_MEDS = [
+        { pattern:/\bibu(?:profen)?\b/i,    name:'Ibuprofen',    unit:'mg', emoji:'💊', color:'#f0c44a', cat:'OTC Drug' },
+        { pattern:/\bpanto(?:prazol)?\b/i,  name:'Pantoprazol',  unit:'mg', emoji:'💊', color:'#7c6af7', cat:'OTC Drug' },
+        { pattern:/\bnaproxen\b/i,          name:'Naproxen',     unit:'mg', emoji:'💊', color:'#f06a6a', cat:'OTC Drug' },
+        { pattern:/\bparacetamol\b/i,       name:'Paracetamol',  unit:'mg', emoji:'💊', color:'#4ab0f0', cat:'OTC Drug' },
+        { pattern:/\baspirin\b/i,           name:'Aspirin',      unit:'mg', emoji:'💊', color:'#4af0c4', cat:'OTC Drug' },
+        { pattern:/\bmetformin\b/i,         name:'Metformin',    unit:'mg', emoji:'💊', color:'#7c6af7', cat:'Medication (Rx)' },
+        { pattern:/\bomeprazol\b/i,         name:'Omeprazol',    unit:'mg', emoji:'💊', color:'#7c6af7', cat:'OTC Drug' },
+        { pattern:/\bcortison\b/i,          name:'Cortison',     unit:'mg', emoji:'💊', color:'#f06a6a', cat:'Medication (Rx)' },
+        { pattern:/\bdiclofenac\b/i,        name:'Diclofenac',   unit:'mg', emoji:'💊', color:'#f0784a', cat:'OTC Drug' },
+        { pattern:/\bcetirizin\b/i,         name:'Cetirizin',    unit:'mg', emoji:'💊', color:'#4af0c4', cat:'OTC Drug' },
+        { pattern:/\bloratadin\b/i,         name:'Loratadin',    unit:'mg', emoji:'💊', color:'#4af0c4', cat:'OTC Drug' },
+        { pattern:/\bkoffein|coffein\b/i,   name:'Caffeine',     unit:'mg', emoji:'☕', color:'#f0c44a', cat:'OTC Drug' },
+        { pattern:/\bmelatonin\b/i,         name:'Melatonin',    unit:'mg', emoji:'🌙', color:'#7c6af7', cat:'Supplement' },
+      ];
+
+      // Split on " + " or " & " to handle multiple substances in one entry
+      const parts = rawText.split(/\s*[+&]\s*/);
+
+      parts.forEach((part, partIdx) => {
+        part = part.trim();
+        if (!part) return;
+
+        let substanceName = null;
+        let dose = null;
+        let unit = 'tablet';
+        let noteText = '';
+        let category = 'OTC Drug';
+        let emoji = '💊';
+        let color = '#f06a6a';
+        let knownDef = null;
+
+        // ── Extract dose patterns ────────────────────────────
+        // Pattern A: "300mg Ibu" or "1200mg Ibu"
+        const dosePrefix = part.match(/^(\d+(?:[.,]\d+)?)\s*(mg|ml|g|µg|ug|mcg|IE|IU|drops?|tropfen)?\s+(.+)/i);
+        // Pattern B: "Ibu 600" or "Ibuprofen 500mg"
+        const doseSuffix = part.match(/^(.+?)\s+(\d+(?:[.,]\d+)?)\s*(mg|ml|g|µg|ug|mcg|IE|IU)?$/i);
+        // Pattern C: "2x Naproxen" or "3x Ibu"
+        const doseCount  = part.match(/^(\d+)\s*x\s+(.+)/i);
+
+        // Extract parenthetical notes: "(Kater)", "(Migräne, schlimm)"
+        const parenNote = part.match(/\(([^)]+)\)/);
+        if (parenNote) {
+          noteText = parenNote[1].trim();
+          part = part.replace(parenNote[0], '').trim();
+        }
+
+        let substanceRaw = part;
+
+        if (doseCount) {
+          dose = parseInt(doseCount[1]);
+          unit = 'tablet';
+          substanceRaw = doseCount[2].trim();
+        } else if (dosePrefix) {
+          dose = parseFloat(dosePrefix[1].replace(',','.'));
+          unit = (dosePrefix[2]||'mg').toLowerCase();
+          substanceRaw = dosePrefix[3].trim();
+        } else if (doseSuffix) {
+          substanceRaw = doseSuffix[1].trim();
+          dose = parseFloat(doseSuffix[2].replace(',','.'));
+          unit = (doseSuffix[3]||'mg').toLowerCase();
+        }
+
+        // Strip trailing free text after substance name
+        // e.g. "Ibu nach Commotio" → substance="Ibu", note="nach Commotio"
+        // Try to find known substance at start of substanceRaw
+        knownDef = KNOWN_MEDS.find(m => m.pattern.test(substanceRaw));
+        if (knownDef) {
+          substanceName = knownDef.name;
+          category = knownDef.cat;
+          emoji = knownDef.emoji;
+          color = knownDef.color;
+          if (!unit || unit === 'tablet') unit = knownDef.unit;
+          // Remaining text after substance name = extra note
+          const remaining = substanceRaw.replace(knownDef.pattern, '').trim();
+          if (remaining) {
+            noteText = [remaining, noteText].filter(Boolean).join(' · ');
+          }
+        } else {
+          // Unknown substance — try to split "Word1 Word2 rest..."
+          // Treat first 1-2 capitalised words as the name, rest as note
+          const words = substanceRaw.split(/\s+/);
+          const nameWords = [];
+          const noteWords = [];
+          let inName = true;
+          words.forEach((w, i) => {
+            // Stop name at lowercase conjunctions or after 3 words
+            if (inName && (i >= 3 || (i > 0 && /^(nach|zum|für|und|mit|bei|wegen|gegen|plus|morgens|abends|nachts)$/i.test(w)))) {
+              inName = false;
+            }
+            if (inName) nameWords.push(w);
+            else noteWords.push(w);
+          });
+          substanceName = nameWords.join(' ').trim() || substanceRaw;
+          if (noteWords.length) noteText = [noteWords.join(' '), noteText].filter(Boolean).join(' · ');
+        }
+
+        if (!substanceName) substanceName = part;
+
+        // ── Find or create substance ──────────────────────────
+        const subId = 'zyk_med_' + substanceName.replace(/\s+/g,'_').toLowerCase().slice(0,30);
+        let sub = res.substances.find(s => s.id === subId || s.name === substanceName);
+        if (!sub) {
+          sub = {
+            id: subId,
+            name: substanceName,
+            category,
+            emoji,
+            color,
+            defaultDose: dose && unit ? `${dose}${unit}` : '',
+            notes: 'Imported from Zyklusdaten',
+            createdAt: new Date().toISOString(),
+          };
+          res.substances.push(sub);
+        }
+
+        // ── Create intake log ─────────────────────────────────
+        res.logs.push({
+          id: 'zyk_mlog_' + date + '_' + subId + '_' + partIdx,
+          substanceId: sub.id,
+          dose: dose || 1,
+          unit: unit || 'tablet',
+          date,
+          time: '12:00',
+          tod: 'With lunch',
+          notes: noteText || '',
+          ts: date + 'T12:00:00.000Z',
+        });
+      });
+    }
 
     // Deduplicate unmapped
     result.unmapped = [...new Set(result.unmapped)];
@@ -4529,6 +4739,207 @@ function confirmImportOtherApp() {
   // Show breakdown
   const parts = Object.entries(added).filter(([,v])=>v>0).map(([k,v])=>`${v} ${k}`);
   if (parts.length > 0) console.log('Imported:', parts.join(', '));
+}
+
+
+// =============================================================
+// LOCATION SETTINGS
+// =============================================================
+function saveLocationSettings(){
+  if(!state.settings.location) state.settings.location={};
+  state.settings.location={
+    city:document.getElementById('settingsCity')?.value.trim()||'',
+    lat:parseFloat(document.getElementById('settingsLat')?.value)||null,
+    lon:parseFloat(document.getElementById('settingsLon')?.value)||null,
+    tempUnit:document.getElementById('settingsTempUnit')?.value||'celsius',
+    autoWeather:document.getElementById('settingsAutoWeather')?.checked!==false,
+  };
+  save();
+}
+
+function detectLocation(){
+  const st=document.getElementById('locationStatus');
+  if(!navigator.geolocation){if(st)st.textContent='Geolocation not supported';return;}
+  if(st){st.className='weather-status loading';st.textContent='Detecting location…';}
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const lat=+pos.coords.latitude.toFixed(4),lon=+pos.coords.longitude.toFixed(4);
+    const le=document.getElementById('settingsLat'),ne=document.getElementById('settingsLon');
+    if(le)le.value=lat;if(ne)ne.value=lon;
+    saveLocationSettings();
+    if(st){st.className='weather-status ok';st.textContent='✓ Detected: '+lat+', '+lon;}
+    fetch('https://geocoding-api.open-meteo.com/v1/search?name='+lat+','+lon+'&count=1&language=en')
+      .then(r=>r.json()).then(d=>{const c=d.results?.[0]?.name||'';if(c){const ce=document.getElementById('settingsCity');if(ce)ce.value=c;saveLocationSettings();}}).catch(()=>{});
+    testWeatherFetch();
+  },err=>{if(st){st.className='weather-status error';st.textContent='Error: '+err.message;}});
+}
+
+async function testWeatherFetch(){
+  const loc=state.settings.location||{};
+  const st=document.getElementById('locationStatus');
+  if(!loc.lat||!loc.lon){if(st){st.className='weather-status error';st.textContent='Enter coordinates first';}return null;}
+  if(st){st.className='weather-status loading';st.textContent='Fetching weather…';}
+  try{
+    const w=await fetchWeatherData(loc.lat,loc.lon,loc.tempUnit||'celsius');
+    if(st){st.className='weather-status ok';st.textContent='✓ Weather OK for '+(loc.city||loc.lat+','+loc.lon);}
+    const prev=document.getElementById('weatherPreview');
+    if(w&&prev)prev.innerHTML=`<div class="weather-badge"><span class="wb-icon">${w.icon}</span><div><div class="wb-temp">${w.temp}${w.unit}</div><div class="wb-desc">${w.description} · UV ${w.uvIndex} · ${w.windSpeed}km/h</div></div><span class="wb-moon" title="${w.moonPhaseName}">${w.moonIcon}</span></div>`;
+    return w;
+  }catch(e){if(st){st.className='weather-status error';st.textContent='Failed: '+e.message;}return null;}
+}
+
+// =============================================================
+// WEATHER FETCH — Open-Meteo (free, no API key)
+// =============================================================
+async function fetchWeatherData(lat,lon,unit){
+  unit=unit||'celsius';
+  const url='https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon
+    +'&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,uv_index'
+    +'&temperature_unit='+unit+'&wind_speed_unit=kmh&timezone=auto';
+  const res=await fetch(url);
+  if(!res.ok)throw new Error('HTTP '+res.status);
+  const d=await res.json();const cur=d.current;
+  const temp=Math.round(cur.temperature_2m);
+  const unitStr=unit==='fahrenheit'?'°F':'°C';
+  const wco=decodeWMO(cur.weather_code||0);
+  const moon=getMoonPhase(new Date());
+  return{temp,unit:unitStr,apparentTemp:Math.round(cur.apparent_temperature),
+    precipitation:cur.precipitation,windSpeed:Math.round(cur.wind_speed_10m),
+    uvIndex:Math.round(cur.uv_index||0),weatherCode:cur.weather_code||0,
+    icon:wco.icon,description:wco.description,
+    moonPhase:moon.phase,moonIcon:moon.icon,moonPhaseName:moon.name,
+    fetchedAt:new Date().toISOString(),lat,lon};
+}
+
+function decodeWMO(code){
+  if(code===0)return{icon:'☀️',description:'Clear sky'};
+  if(code===1)return{icon:'🌤',description:'Mainly clear'};
+  if(code===2)return{icon:'⛅',description:'Partly cloudy'};
+  if(code===3)return{icon:'☁️',description:'Overcast'};
+  if(code>=45&&code<=49)return{icon:'🌫',description:'Fog'};
+  if(code>=51&&code<=57)return{icon:'🌦',description:'Drizzle'};
+  if(code>=61&&code<=67)return{icon:'🌧',description:'Rain'};
+  if(code>=71&&code<=77)return{icon:'❄️',description:'Snow'};
+  if(code>=80&&code<=82)return{icon:'🌧',description:'Rain showers'};
+  if(code>=85&&code<=86)return{icon:'🌨',description:'Snow showers'};
+  if(code>=95&&code<=99)return{icon:'⛈',description:'Thunderstorm'};
+  return{icon:'🌡',description:'Code '+code};
+}
+
+// =============================================================
+// MOON PHASE (mathematical, works for any date)
+// =============================================================
+function getMoonPhase(date){
+  let y=date.getFullYear(),m=date.getMonth()+1,d=date.getDate();
+  if(m<=2){y--;m+=12;}
+  const A=Math.floor(y/100),B=2-A+Math.floor(A/4);
+  const JD=Math.floor(365.25*(y+4716))+Math.floor(30.6001*(m+1))+d+B-1524.5;
+  const phase=((JD-2451549.5)/29.53058867%1+1)%1;
+  let name,icon;
+  if(phase<0.03||phase>0.97){name='New Moon';icon='🌑';}
+  else if(phase<0.22){name='Waxing Crescent';icon='🌒';}
+  else if(phase<0.28){name='First Quarter';icon='🌓';}
+  else if(phase<0.47){name='Waxing Gibbous';icon='🌔';}
+  else if(phase<0.53){name='Full Moon';icon='🌕';}
+  else if(phase<0.72){name='Waning Gibbous';icon='🌖';}
+  else if(phase<0.78){name='Last Quarter';icon='🌗';}
+  else{name='Waning Crescent';icon='🌘';}
+  return{phase,name,icon,illumination:Math.round(Math.abs(Math.cos(phase*2*Math.PI))*100)};
+}
+
+// =============================================================
+// ATTACH WEATHER TO LOG ENTRY
+// =============================================================
+async function attachWeatherToLog(entry){
+  const loc=state.settings.location||{};
+  const moon=getMoonPhase(new Date(entry.date||new Date()));
+  if(!loc.autoWeather||!loc.lat||!loc.lon){
+    entry.env={moonPhase:moon.phase,moonIcon:moon.icon,moonPhaseName:moon.name};
+    return entry;
+  }
+  try{
+    const w=await fetchWeatherData(loc.lat,loc.lon,loc.tempUnit||'celsius');
+    if(w)entry.env={temp:w.temp,tempUnit:w.unit,weatherCode:w.weatherCode,
+      weatherIcon:w.icon,weatherDesc:w.description,uvIndex:w.uvIndex,
+      windSpeed:w.windSpeed,precipitation:w.precipitation,
+      moonPhase:w.moonPhase,moonIcon:w.moonIcon,moonPhaseName:w.moonPhaseName,
+      fetchedAt:w.fetchedAt};
+  }catch{
+    entry.env={moonPhase:moon.phase,moonIcon:moon.icon,moonPhaseName:moon.name};
+  }
+  return entry;
+}
+
+// =============================================================
+// INJECT ENVIRONMENT ROWS INTO CYCLE GRID
+// =============================================================
+function injectMoonRow(){
+  const table=document.getElementById('cycleGridTable');
+  if(!table)return;
+  // Remove any existing env rows first
+  table.querySelectorAll('tr[data-env-row]').forEach(r=>r.remove());
+
+  const daysInMonth=new Date(gridYear,gridMonth+1,0).getDate();
+  const today=dateStr_g(new Date());
+  const loc=state.settings.location||{};
+  const unit=loc.tempUnit==='fahrenheit'?'°F':'°C';
+
+  // Build env data lookup
+  const envByDate={};
+  state.healthLogs.forEach(l=>{if(l.env&&l.date)envByDate[l.date]=l.env;});
+  state.cycleLogs.forEach(l=>{if(l.env&&l.date)envByDate[l.date]=l.env;});
+
+  const makeRow=(label,cellFn)=>{
+    const tr=document.createElement('tr');
+    tr.setAttribute('data-env-row','1');
+    const td=document.createElement('td');
+    td.className='cg-label';td.textContent=label;tr.appendChild(td);
+    for(let i=1;i<=daysInMonth;i++){
+      const d=new Date(gridYear,gridMonth,i);
+      const ds=dateStr_g(d);
+      const cell=document.createElement('td');
+      cell.className='cg-cell'+(ds===today?' is-today':'');
+      cell.innerHTML=cellFn(d,ds);
+      tr.appendChild(cell);
+    }
+    return tr;
+  };
+
+  const sepRow=document.createElement('tr');
+  sepRow.setAttribute('data-env-row','1');
+  sepRow.className='cg-group-row';
+  const sepTd=document.createElement('td');
+  sepTd.className='cg-label group-header-label';sepTd.textContent='🌍 Environment';
+  sepRow.appendChild(sepTd);
+  for(let i=1;i<=daysInMonth;i++){const td=document.createElement('td');td.className='cg-cell';sepRow.appendChild(td);}
+
+  const moonRow=makeRow('🌙 Moon',(d,ds)=>{
+    const moon=getMoonPhase(d);
+    return`<span style="font-size:13px" title="${moon.name} · ${moon.illumination}% lit">${moon.icon}</span>`;
+  });
+
+  const weatherRow=makeRow('🌤 Weather',(d,ds)=>{
+    const env=envByDate[ds];
+    if(!env?.temp)return'';
+    const t=env.temp;
+    const col=t<0?'#4ab0f0':t<10?'#7c6af7':t<20?'#4af0c4':t<28?'#f0c44a':'#f06a6a';
+    return`<span style="font-size:9px;font-family:'DM Mono',monospace;color:${col}" title="${env.weatherDesc||''}">${env.weatherIcon||''} ${t}°</span>`;
+  });
+
+  const uvRow=makeRow('☀️ UV',(d,ds)=>{
+    const env=envByDate[ds];
+    if(env?.uvIndex==null)return'';
+    const uv=env.uvIndex;
+    const col=uv<=2?'var(--good)':uv<=5?'var(--warn)':uv<=7?'var(--accent4)':'var(--bad)';
+    return`<span style="font-size:9px;font-family:'DM Mono',monospace;color:${col}" title="UV Index">${uv}</span>`;
+  });
+
+  const tbody=table.querySelector('tbody');
+  if(tbody){
+    tbody.insertBefore(uvRow,tbody.firstChild);
+    tbody.insertBefore(weatherRow,tbody.firstChild);
+    tbody.insertBefore(moonRow,tbody.firstChild);
+    tbody.insertBefore(sepRow,tbody.firstChild);
+  }
 }
 
 if('serviceWorker' in navigator){
