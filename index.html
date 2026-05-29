@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>WellBee 🐝</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0d9488">
@@ -19,7 +19,7 @@
   --bg:#0a0f0e;--bg2:#111918;--bg3:#182220;
   --bd:#1e2e2b;--bd2:#243330;
   --tx:#e2ede9;--tx2:#94b0aa;--tx3:#5a7a74;
-  --cw:38px;--rh:28px;--lw:120px;--hh:50px;--nh:54px;--r:8px;
+  --cw:38px;--rh:28px;--lw:120px;--hh:50px;--nh:54px;--sab:env(safe-area-inset-bottom, 0px);--r:8px;
   --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -47,12 +47,12 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--san
 .sp::-webkit-scrollbar{width:3px}.sp::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
 
 /* BOTTOM NAV */
-#nav{height:var(--nh);background:var(--bg2);border-top:1px solid var(--bd);display:flex;flex-shrink:0}
-.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:transparent;color:var(--tx3);cursor:pointer;font-size:9px;font-family:var(--sans);transition:.15s;position:relative}
-.nb .ni{font-size:17px;line-height:1}
-.nb.active{color:var(--teal-l)}
+#nav{height:calc(var(--nh) + var(--sab));padding-bottom:var(--sab);background:var(--bg2);border-top:1px solid var(--bd);display:flex;flex-shrink:0;align-items:stretch}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:transparent;color:var(--tx3);cursor:pointer;font-size:11px;font-family:var(--sans);transition:.15s;position:relative}
+.nb .ni{font-size:20px;line-height:1}
+.nb.active{color:var(--teal-l);font-weight:500}
 .nb.active::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:28px;height:2px;background:var(--teal-l);border-radius:0 0 2px 2px}
-.nb.rose.active{color:var(--rose-l)}
+.nb.rose.active{color:var(--rose-l);font-weight:500}
 .nb.rose.active::after{background:var(--rose-l)}
 
 /* GRID */
@@ -172,7 +172,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--san
 .apt{flex:1;font-size:11px;color:var(--tx2)}
 .apt strong{color:var(--teal-l)}
 /* TOAST */
-#toast{position:fixed;bottom:calc(var(--nh)+10px);left:50%;transform:translateX(-50%) translateY(16px);background:var(--bg3);border:1px solid var(--teal-m);color:var(--teal-l);padding:6px 14px;border-radius:20px;font-size:11px;font-family:var(--mono);opacity:0;transition:.2s;pointer-events:none;white-space:nowrap;z-index:200}
+#toast{position:fixed;bottom:calc(var(--nh) + var(--sab) + 10px);left:50%;transform:translateX(-50%) translateY(16px);background:var(--bg3);border:1px solid var(--teal-m);color:var(--teal-l);padding:6px 14px;border-radius:20px;font-size:11px;font-family:var(--mono);opacity:0;transition:.2s;pointer-events:none;white-space:nowrap;z-index:200}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 /* DIVIDER */
 .dv{height:1px;background:var(--bd);margin:12px 0}
@@ -180,7 +180,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--san
 .es{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:36px 16px;color:var(--tx3)}
 .es .ei{font-size:28px}.es .et{font-size:12px;text-align:center}
 /* PWA banner */
-#pwa-banner{position:fixed;bottom:calc(var(--nh)+10px);left:10px;right:10px;background:var(--bg2);border:1px solid var(--teal-m);border-radius:10px;padding:10px 12px;z-index:150;display:none;align-items:center;gap:9px;box-shadow:0 4px 20px #00000066}
+#pwa-banner{position:fixed;bottom:calc(var(--nh) + var(--sab) + 10px);left:10px;right:10px;background:var(--bg2);border:1px solid var(--teal-m);border-radius:10px;padding:10px 12px;z-index:150;display:none;align-items:center;gap:9px;box-shadow:0 4px 20px #00000066}
 </style>
 </head>
 <body>
