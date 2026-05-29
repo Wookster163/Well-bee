@@ -1,117 +1,76 @@
-// Well-bee Service Worker — v3.0
-// Caches app shell for full offline support
+// WellBee Service Worker — v1.0
+// Caches the full app shell for offline use.
+// All data is stored in localStorage on the device.
 
 const CACHE_NAME = 'wellbee-v1';
 
-// Resources to pre-cache on install
-const PRECACHE_URLS = [
+const PRECACHE = [
+  './',
   './index.html',
   './manifest.json',
-  // External CDN resources — cached on first load
+  './icons/icon-192.png',
+  './icons/icon-512.png',
 ];
 
-// CDN origins to cache at runtime
-const CDN_ORIGINS = [
-  'https://fonts.googleapis.com',
-  'https://fonts.gstatic.com',
-  'https://cdnjs.cloudflare.com',
+const CDN_HOSTS = [
+  'fonts.googleapis.com',
+  'fonts.gstatic.com',
 ];
 
 // ── Install: pre-cache app shell ─────────────────────────────
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(PRECACHE_URLS))
+      .then(cache => cache.addAll(PRECACHE))
       .then(() => self.skipWaiting())
   );
 });
 
-// ── Activate: clean up old caches ────────────────────────────
+// ── Activate: remove old caches ──────────────────────────────
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys
-          .filter(key => key !== CACHE_NAME)
-          .map(key => caches.delete(key))
-      )
-    ).then(() => self.clients.claim())
+    caches.keys()
+      .then(keys => Promise.all(
+        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+      ))
+      .then(() => self.clients.claim())
   );
 });
 
-// ── Fetch: cache-first for app shell, network-first for CDN ──
+// ── Fetch: cache-first for app, network-first for CDN fonts ──
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // Skip non-GET requests
   if (event.request.method !== 'GET') return;
-
-  // Skip chrome-extension and non-http requests
   if (!event.request.url.startsWith('http')) return;
 
-  // Strategy: Cache-first for same-origin (the app itself)
-  if (url.origin === self.location.origin) {
-    event.respondWith(
-      caches.match(event.request).then(cached => {
-        if (cached) return cached;
-        return fetch(event.request).then(response => {
-          // Cache successful responses
-          if (response && response.status === 200) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-          }
-          return response;
-        }).catch(() => {
-          // If fetch fails and no cache, return offline page
-          if (event.request.destination === 'document') {
-            return caches.match('./index.html');
-          }
-        });
-      })
-    );
-    return;
-  }
-
-  // Strategy: Network-first with cache fallback for CDN resources
-  const isCDN = CDN_ORIGINS.some(origin => url.origin.startsWith(origin.replace('https://', '')));
-  if (isCDN || CDN_ORIGINS.some(o => event.request.url.startsWith(o))) {
+  // Fonts: network-first, fall back to cache
+  if (CDN_HOSTS.includes(url.hostname)) {
     event.respondWith(
       fetch(event.request)
-        .then(response => {
-          if (response && response.status === 200) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-          }
-          return response;
+        .then(res => {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
+          return res;
         })
         .catch(() => caches.match(event.request))
     );
     return;
   }
-});
 
-// ── Background sync placeholder (future: sync to server) ─────
-self.addEventListener('sync', event => {
-  if (event.tag === 'sync-logs') {
-    console.log('Background sync triggered — future cloud sync feature');
+  // App shell: cache-first
+  if (url.origin === self.location.origin) {
+    event.respondWith(
+      caches.match(event.request)
+        .then(cached => {
+          if (cached) return cached;
+          return fetch(event.request).then(res => {
+            const clone = res.clone();
+            caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
+            return res;
+          });
+        })
+        .catch(() => caches.match('./index.html'))
+    );
   }
-});
-
-// ── Push notifications placeholder (future feature) ──────────
-self.addEventListener('push', event => {
-  const data = event.data ? event.data.json() : {};
-  const title = data.title || 'VitaLog';
-  const options = {
-    body: data.body || 'Time to log your health data',
-    icon: './icons/icon-192.png',
-    badge: './icons/icon-96.png',
-    vibrate: [200, 100, 200],
-    data: { url: data.url || './' }
-  };
-  event.waitUntil(self.registration.showNotification(title, options));
-});
-
-self.addEventListener('notificationclick', event => {
-  event.notification.close();
-  event.waitUntil(clients.openWindow(event.notification.data.url || './'));
 });
