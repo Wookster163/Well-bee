@@ -84,15 +84,15 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--san
 .gc.bd:hover{background:var(--rose-m)}
 .gc.we{opacity:.45}
 /* cell contents */
-.ck{width:12px;height:12px;border-radius:2px;border:1.5px solid var(--bd2);transition:.1s;position:relative;display:flex;align-items:center;justify-content:center}
+.ck{width:calc(var(--rh)*0.45);height:calc(var(--rh)*0.45);min-width:10px;min-height:10px;border-radius:2px;border:1.5px solid var(--bd2);transition:.1s;position:relative;display:flex;align-items:center;justify-content:center}
 .ck.on{border-color:var(--teal);background:var(--teal)}
-.ck.on::after{content:'✓';font-size:8px;color:#fff;font-weight:700;position:absolute}
+.ck.on::after{content:'✓';font-size:calc(var(--rh)*0.3);color:#fff;font-weight:700;position:absolute}
 .ck.rose.on{background:var(--rose);border-color:var(--rose)}
-.cb{display:flex;align-items:flex-end;justify-content:center;height:20px;width:28px}
-.cbi{width:9px;border-radius:2px 2px 0 0;min-height:2px;transition:.2s}
-.ce{font-size:13px;line-height:1}
-.cl{font-family:var(--mono);font-size:8px;text-align:center;max-width:34px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cd{width:3px;height:3px;border-radius:50%;background:var(--bd2)}
+.cb{display:flex;align-items:flex-end;justify-content:center;height:calc(var(--rh)*0.78);width:100%}
+.cbi{width:calc(var(--cw)*0.25);min-width:6px;max-width:14px;border-radius:2px 2px 0 0;min-height:2px;transition:.2s}
+.ce{font-size:calc(var(--rh)*0.58);min-font-size:11px;line-height:1}
+.cl{font-family:var(--mono);font-size:calc(var(--rh)*0.3);min-font-size:7px;text-align:center;width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cd{width:calc(var(--rh)*0.15);height:calc(var(--rh)*0.15);min-width:3px;min-height:3px;border-radius:50%;background:var(--bd2)}
 /* toggle bar */
 .stb{display:flex;gap:6px;flex-wrap:wrap;padding:6px 10px;background:var(--bg2);border-bottom:1px solid var(--bd);flex-shrink:0}
 .st{font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid var(--bd2);background:transparent;color:var(--tx3);cursor:pointer;font-family:var(--mono);transition:.1s}
@@ -183,6 +183,30 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--san
 /* PWA banner */
 #pwa-banner{position:fixed;bottom:16px;left:10px;right:10px;background:var(--bg2);border:1px solid var(--teal-m);border-radius:10px;padding:10px 12px;z-index:150;display:none;align-items:center;gap:9px;box-shadow:0 4px 20px #00000066}
 </style>
+<script>
+// Must be in <head> - Chrome fires beforeinstallprompt before body scripts run
+window._ip = null;
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  window._ip = e;
+  localStorage.removeItem('pwa_dismissed');
+  // Show banner after short delay (DOM must be ready)
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+      var b = document.getElementById('pwa-banner');
+      if (b) b.style.display = 'flex';
+      if (typeof updateInstallUI === 'function') updateInstallUI();
+    }, 1200);
+  });
+});
+window.addEventListener('appinstalled', function() {
+  window._ip = null;
+  var b = document.getElementById('pwa-banner');
+  if (b) b.style.display = 'none';
+  if (typeof updateInstallUI === 'function') updateInstallUI();
+  if (typeof showToast === 'function') showToast('WellBee installed 🐝');
+});
+</script>
 </head>
 <body>
 <div id="app">
@@ -318,22 +342,34 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--san
         <div class="card">
           <div class="ct">📊 Grid</div>
           <div class="fi"><label>Row height</label>
-            <select id="s-rowh" onchange="applyRowHeight(this.value)">
-              <option value="22">XS (22px)</option>
-              <option value="26">Compact (26px)</option>
-              <option value="30" selected>Normal (30px)</option>
-              <option value="36">Relaxed (36px)</option>
-              <option value="42">Large (42px)</option>
-            </select>
+            <div style="display:flex;gap:7px;align-items:center">
+              <select id="s-rowh" onchange="applyRowHeight(this.value);document.getElementById('s-rowh-num').value=this.value" style="flex:1">
+                <option value="16">2XS (16px)</option>
+                <option value="20">XS (20px)</option>
+                <option value="24">Small (24px)</option>
+                <option value="28">Compact (28px)</option>
+                <option value="32" selected>Normal (32px)</option>
+                <option value="38">Relaxed (38px)</option>
+                <option value="46">Large (46px)</option>
+              </select>
+              <input type="number" id="s-rowh-num" min="12" max="80" value="32" style="width:58px;background:var(--bg3);border:1px solid var(--bd2);border-radius:5px;padding:6px 7px;color:var(--tx);font-size:12px;font-family:var(--mono);outline:none;text-align:center" oninput="applyRowHeight(this.value);document.getElementById('s-rowh').value=''">
+              <span style="font-size:10px;color:var(--tx3);font-family:var(--mono)">px</span>
+            </div>
           </div>
           <div class="fi"><label>Column width</label>
-            <select id="s-colw" onchange="applyColWidth(this.value)">
-              <option value="30">XS (30px)</option>
-              <option value="36">Compact (36px)</option>
-              <option value="42" selected>Normal (42px)</option>
-              <option value="50">Wide (50px)</option>
-              <option value="60">XL (60px)</option>
-            </select>
+            <div style="display:flex;gap:7px;align-items:center">
+              <select id="s-colw" onchange="applyColWidth(this.value);document.getElementById('s-colw-num').value=this.value" style="flex:1">
+                <option value="18">2XS (18px)</option>
+                <option value="22">XS (22px)</option>
+                <option value="28">Small (28px)</option>
+                <option value="36">Compact (36px)</option>
+                <option value="42" selected>Normal (42px)</option>
+                <option value="50">Wide (50px)</option>
+                <option value="60">XL (60px)</option>
+              </select>
+              <input type="number" id="s-colw-num" min="12" max="100" value="42" style="width:58px;background:var(--bg3);border:1px solid var(--bd2);border-radius:5px;padding:6px 7px;color:var(--tx);font-size:12px;font-family:var(--mono);outline:none;text-align:center" oninput="applyColWidth(this.value);document.getElementById('s-colw').value=''">
+              <span style="font-size:10px;color:var(--tx3);font-family:var(--mono)">px</span>
+            </div>
           </div>
           <div class="fi">
             <label class="tw"><div class="tg"><input type="checkbox" id="s-weekend" checked onchange="saveSetting('weekend',this.checked);renderGrid()"><div class="ts"></div></div><span class="tl">Dim weekends</span></label>
@@ -438,7 +474,7 @@ const DEFAULT_SUBS = [
   {id:'sub-ibu', name:'Ibuprofen',   icon:'💊',type:'numerical',unit:'mg', min:0,max:1200, scaleMode:'fixed',scaleMin:0,scaleMax:1200, customColor:'#f472b6',autocopy:false,showGrid:true,step:200, options:[],section:'substance'},
 ];
 const DEFAULT_HM = [
-  {id:'hm-bleed', name:'Bleeding',icon:'🩸',type:'list',  options:['None','Spotting','Light','Medium','Heavy'],color:'rose',section:'cycle', autocopy:false,showGrid:true,customColor:'#fb7185'},
+  {id:'hm-bleed', name:'Bleeding',icon:'🩸',type:'list',options:['None','Spotting','Light','Medium','Heavy'],color:'rose',section:'cycle',autocopy:false,showGrid:true,customColor:'#fb7185',displayStyle:'drops'},
   {id:'hm-cramp', name:'Cramps',  icon:'⚡',type:'list',  options:['None','Mild','Moderate','Severe'],          color:'rose',section:'cycle', autocopy:false,showGrid:true,customColor:'#fb7185'},
   {id:'hm-fat',   name:'Fatigue', icon:'😴',type:'list',  options:['None','Mild','Moderate','Severe'],          color:'rose',section:'cycle', autocopy:false,showGrid:true,customColor:'#fb7185'},
   {id:'hm-pain',  name:'Pain',    icon:'💢',type:'list',  options:['None','Mild','Moderate','Severe'],          color:'rose',section:'cycle', autocopy:false,showGrid:true,customColor:'#fb7185'},
@@ -639,19 +675,46 @@ function renderCell(cell,item,val){
     if(val){const e=document.createElement('div');e.className='ce';e.textContent=val;cell.appendChild(e);}
     else{const d=document.createElement('div');d.className='cd';cell.appendChild(d);}
   } else if(item.type==='list'){
-    const first=item.options&&item.options[0];
-    if(val&&val!==''&&val!==first){
-      const l=document.createElement('div');l.className='cl';
-      l.style.color=cc||(isRose?'var(--rose-l)':'var(--teal-l)');
-      l.textContent=val.length>4?val.slice(0,4)+'…':val;cell.appendChild(l);
-    } else {const d=document.createElement('div');d.className='cd';cell.appendChild(d);}
+    // Special drops display for bleeding
+    if(item.displayStyle==='drops'){
+      const dropMap={
+        'None':     {drops:0, color:'#fb7185', opacity:0},
+        'Spotting': {drops:1, size:0.35, color:'#fb7185', opacity:0.55},
+        'Light':    {drops:1, size:0.55, color:'#e11d48', opacity:0.75},
+        'Medium':   {drops:2, size:0.65, color:'#be123c', opacity:0.9},
+        'Heavy':    {drops:3, size:0.75, color:'#9f1239', opacity:1.0},
+      };
+      const cfg = val ? (dropMap[val]||dropMap['None']) : dropMap['None'];
+      if(cfg.drops===0){const d=document.createElement('div');d.className='cd';d.style.background='var(--rose-d)';cell.appendChild(d);}
+      else {
+        const rh=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--rh'))||28;
+        const wrap=document.createElement('div');
+        wrap.style.cssText='display:flex;align-items:center;justify-content:center;gap:1px;width:100%';
+        for(let i=0;i<cfg.drops;i++){
+          const drop=document.createElement('div');
+          const sz=Math.round(rh*cfg.size*(0.8+i*0.1));
+          drop.style.cssText=`width:${sz}px;height:${sz}px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:${cfg.color};opacity:${cfg.opacity};flex-shrink:0`;
+          wrap.appendChild(drop);
+        }
+        cell.appendChild(wrap);
+      }
+    } else {
+      const first=item.options&&item.options[0];
+      if(val&&val!==''&&val!==first){
+        const l=document.createElement('div');l.className='cl';
+        l.style.color=cc||(isRose?'var(--rose-l)':'var(--teal-l)');
+        l.textContent=val.length>4?val.slice(0,4)+'…':val;cell.appendChild(l);
+      } else {const d=document.createElement('div');d.className='cd';cell.appendChild(d);}
+    }
   } else if(item.type==='numerical'){
     if(val!==null&&val!==undefined&&val!==''){
       const num=parseFloat(val);
       const mn=item.scaleMode==='fixed'?parseFloat(item.scaleMin||0):getMin(item.id);
       const mx=item.scaleMode==='fixed'?parseFloat(item.scaleMax||10):getMax(item.id);
       const pct=mx>mn?Math.max(0,Math.min(1,(num-mn)/(mx-mn))):0.5;
-      const h=Math.max(2,Math.round(pct*20));
+      const rh_=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--rh'))||28;
+      const maxBarH=Math.round(rh_*0.78);
+      const h=Math.max(2,Math.round(pct*maxBarH));
       const w=document.createElement('div');w.className='cb';
       const b=document.createElement('div');b.className='cbi';
       b.style.height=h+'px';b.style.background=cc||(isRose?'var(--rose-l)':'var(--teal-l)');
@@ -784,7 +847,20 @@ function editItemModal(item,kind){
   });
   h+=`</div><button class="btn bg bxs" style="margin-top:5px" onclick="addOpt()">+ Add option</button></div>`;
   // Emoji picker
-  const EMOJI_POOL = ['😊','😌','😐','😔','😞','😩','🥰','😤','😴','🤢','🤧','💪','🧘','🏃','😵','🥵','🥶','😣','😖','😫','⭐','✅','❌','🔴','🟡','🟢','💙','💜','🩷','🖤','⚡','🔥','💧','🌿','🌸','🍀','☀️','🌙','❄️','🌈'];
+  const EMOJI_POOL = [
+    // Mood & emotions
+    '😊','😁','🥰','😌','😐','😕','😔','😞','😩','😭','😤','😡','🤯','😱','😴','🥱','😵','🤩','🥳','😏',
+    // Physical feeling
+    '💪','🧘','🏃','🚶','🛌','🤢','🤧','🤒','🤕','🥵','🥶','😣','😖','😫','🤮','💆','🧠','❤️‍🩹',
+    // Body & health
+    '❤️','🩷','🫀','🫁','🦴','💊','🩹','🩺','🌡️','💉','🧬','🫧',
+    // Nature & wellness
+    '🌸','🌿','🍀','☀️','🌙','⭐','❄️','🌈','🌊','🔥','💧','⚡','🌱','🌻','🫐','🍃',
+    // Status & symbols
+    '✅','❌','⚠️','🔴','🟠','🟡','🟢','🔵','🟣','⚫','⚪','🩸','💫','✨','🎯','📈','📉',
+    // Food & supplements
+    '🍵','☕','🥗','🥦','🍊','🫚','🥛','💊','🧃','🫖',
+  ];
   const selEmojis = type==='emoji'&&opts.length?opts:type==='emoji'?['😊','😌','😐','😔','😞']:[];
   h+=`<div id="ei-eopts" style="${type==='emoji'?'':'display:none'}">`;
   h+=`<div class="ms">Emoji options — tap to add/remove from your set</div>`;
@@ -1071,8 +1147,10 @@ function loadSettings(){
   const s=db.settings;
   const cs=document.getElementById('s-cstart');if(cs)cs.value=s.cycleStart||'bleed';
   const cl=document.getElementById('s-clen');if(cl)cl.value=s.cycleLen||28;
-  const rh=document.getElementById('s-rowh');if(rh)rh.value=s.rowH||30;
+  const rh=document.getElementById('s-rowh');if(rh)rh.value=s.rowH||32;
+  const rhn=document.getElementById('s-rowh-num');if(rhn)rhn.value=s.rowH||32;
   const cw=document.getElementById('s-colw');if(cw)cw.value=s.colW||42;
+  const cwn=document.getElementById('s-colw-num');if(cwn)cwn.value=s.colW||42;
   const we=document.getElementById('s-weekend');if(we)we.checked=s.weekend!==false;
   applyRowHeight(s.rowH||28);
   applyColWidth(s.colW||38);
@@ -1554,8 +1632,6 @@ function showToast(m){const t=document.getElementById('toast');t.textContent=m;t
 // PWA
 // ═══════════════════════════════════════════════════════════
 // ── PWA Install ─────────────────────────────────────────────
-let _ip = null;
-
 function updateInstallUI() {
   const btn    = document.getElementById('pwa-install-btn');
   const status = document.getElementById('pwa-install-status');
@@ -1573,7 +1649,7 @@ function updateInstallUI() {
     if (btn) btn.style.display = 'none';
     if (iosHint) iosHint.style.display = 'none';
     if (card) card.style.borderColor = 'var(--teal)';
-  } else if (_ip) {
+  } else if (window._ip) {
     status.textContent = '✅ Ready to install — tap the button below';
     if (btn) btn.style.display = '';
     if (iosHint) iosHint.style.display = 'none';
@@ -1592,14 +1668,14 @@ function updateInstallUI() {
 }
 
 function triggerInstall() {
-  if (!_ip) { showToast('Install prompt not available — try refreshing'); return; }
-  _ip.prompt();
-  _ip.userChoice.then(c => {
+  if (!window._ip) { showToast('Install prompt not available — try refreshing'); return; }
+  window._ip.prompt();
+  window._ip.userChoice.then(c => {
     if (c.outcome === 'accepted') {
       showToast('WellBee installed 🐝');
       localStorage.removeItem('pwa_dismissed');
     }
-    _ip = null;
+    window._ip = null;
     updateInstallUI();
     const b = document.getElementById('pwa-banner');
     if (b) b.style.display = 'none';
@@ -1608,26 +1684,7 @@ function triggerInstall() {
 
 function installPWA() { triggerInstall(); }
 
-// Capture install prompt as early as possible — NEVER dismiss permanently
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  _ip = e;
-  localStorage.removeItem('pwa_dismissed'); // always clear old dismissal
-  updateInstallUI();
-  // Show banner
-  setTimeout(() => {
-    const b = document.getElementById('pwa-banner');
-    if (b) b.style.display = 'flex';
-  }, 1500);
-});
-
-window.addEventListener('appinstalled', () => {
-  _ip = null;
-  const b = document.getElementById('pwa-banner');
-  if (b) b.style.display = 'none';
-  updateInstallUI();
-  showToast('WellBee installed 🐝');
-});
+// Install prompt handled in <head> script
 
 // Register SW
 if ('serviceWorker' in navigator) {
