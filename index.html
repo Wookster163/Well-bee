@@ -274,6 +274,52 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--san
           </div>
         </div>
         <div class="card">
+          <div class="ct">🎨 Theme</div>
+          <div class="fi"><label>Presets</label>
+            <div class="chips" id="preset-chips">
+              <button class="preset-chip chip active" data-preset="Dark Teal" onclick="applyPreset('Dark Teal')">Dark Teal</button>
+              <button class="preset-chip chip" data-preset="Dark Purple" onclick="applyPreset('Dark Purple')">Dark Purple</button>
+              <button class="preset-chip chip" data-preset="Dark Blue" onclick="applyPreset('Dark Blue')">Dark Blue</button>
+              <button class="preset-chip chip" data-preset="Forest" onclick="applyPreset('Forest')">Forest</button>
+              <button class="preset-chip chip" data-preset="Midnight" onclick="applyPreset('Midnight')">Midnight</button>
+              <button class="preset-chip chip" data-preset="Warm Dark" onclick="applyPreset('Warm Dark')">Warm Dark</button>
+            </div>
+          </div>
+          <div class="dv"></div>
+          <div class="fi"><label>Custom colors</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
+              <div>
+                <div style="font-size:10px;color:var(--tx3);font-family:var(--mono);margin-bottom:3px">Accent (main)</div>
+                <div style="display:flex;align-items:center;gap:7px">
+                  <input type="color" id="tc-accent" style="width:32px;height:32px;border:none;background:none;cursor:pointer;padding:0;border-radius:6px" onchange="applyCustomColor('accent',this.value)">
+                  <input type="color" id="tc-accentL" style="width:32px;height:32px;border:none;background:none;cursor:pointer;padding:0;border-radius:6px" title="Accent light" onchange="applyCustomColor('accentL',this.value)">
+                  <span style="font-size:10px;color:var(--tx3)">dark / light</span>
+                </div>
+              </div>
+              <div>
+                <div style="font-size:10px;color:var(--tx3);font-family:var(--mono);margin-bottom:3px">Cycle color</div>
+                <div style="display:flex;align-items:center;gap:7px">
+                  <input type="color" id="tc-cycle" style="width:32px;height:32px;border:none;background:none;cursor:pointer;padding:0;border-radius:6px" onchange="applyCustomColor('cycle',this.value)">
+                  <input type="color" id="tc-cycleL" style="width:32px;height:32px;border:none;background:none;cursor:pointer;padding:0;border-radius:6px" title="Cycle light" onchange="applyCustomColor('cycleL',this.value)">
+                  <span style="font-size:10px;color:var(--tx3)">dark / light</span>
+                </div>
+              </div>
+              <div>
+                <div style="font-size:10px;color:var(--tx3);font-family:var(--mono);margin-bottom:3px">Background</div>
+                <div style="display:flex;align-items:center;gap:5px">
+                  <input type="color" id="tc-bg"  style="width:26px;height:26px;border:none;background:none;cursor:pointer;padding:0;border-radius:5px" title="BG darkest" onchange="applyCustomColor('bg',this.value)">
+                  <input type="color" id="tc-bg2" style="width:26px;height:26px;border:none;background:none;cursor:pointer;padding:0;border-radius:5px" title="BG mid" onchange="applyCustomColor('bg2',this.value)">
+                  <input type="color" id="tc-bg3" style="width:26px;height:26px;border:none;background:none;cursor:pointer;padding:0;border-radius:5px" title="BG light" onchange="applyCustomColor('bg3',this.value)">
+                  <span style="font-size:10px;color:var(--tx3)">1 / 2 / 3</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="fi" style="margin-top:6px">
+            <button class="btn bg bs" onclick="applyPreset('Dark Teal')">↺ Reset to default</button>
+          </div>
+        </div>
+        <div class="card">
           <div class="ct">💾 Data</div>
           <div class="fi">
             <div class="rb" style="flex-wrap:wrap;gap:6px">
@@ -316,7 +362,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--san
 const DB = 'wellbee_v1';
 let db = {
   substances:[],healthMarkers:[],logs:{},cycles:[],history:[],
-  settings:{cycleStart:'bleed',cycleLen:28,weekend:true,rowH:28}
+  settings:{cycleStart:'bleed',cycleLen:28,weekend:true,rowH:28,theme:{accent:'#0d9488',accentL:'#14b8a6',cycle:'#e11d48',cycleL:'#fb7185',bg:'#0a0f0e',bg2:'#111918',bg3:'#182220',bd:'#1e2e2b',bd2:'#243330'}}
 };
 
 const DEFAULT_SUBS = [
@@ -866,6 +912,34 @@ function editHistEntry(i){
 // ═══════════════════════════════════════════════════════════
 // SETTINGS
 // ═══════════════════════════════════════════════════════════
+const PRESETS = {
+  'Dark Teal':    {accent:'#0d9488',accentL:'#14b8a6',cycle:'#e11d48',cycleL:'#fb7185',bg:'#0a0f0e',bg2:'#111918',bg3:'#182220',bd:'#1e2e2b',bd2:'#243330'},
+  'Dark Purple':  {accent:'#7c3aed',accentL:'#a78bfa',cycle:'#db2777',cycleL:'#f472b6',bg:'#0a0810',bg2:'#130f1e',bg3:'#1c1530',bd:'#2a1f40',bd2:'#352850'},
+  'Dark Blue':    {accent:'#1d4ed8',accentL:'#60a5fa',cycle:'#be123c',cycleL:'#fb7185',bg:'#080c14',bg2:'#0f1624',bg3:'#162030',bd:'#1e2d45',bd2:'#253755'},
+  'Forest':       {accent:'#166534',accentL:'#4ade80',cycle:'#9d174d',cycleL:'#f9a8d4',bg:'#050e07',bg2:'#0c160e',bg3:'#122016',bd:'#1a3020',bd2:'#204028'},
+  'Midnight':     {accent:'#0891b2',accentL:'#38bdf8',cycle:'#be123c',cycleL:'#fb7185',bg:'#040810',bg2:'#080f1a',bg3:'#0d1825',bd:'#152035',bd2:'#1c2d45'},
+  'Warm Dark':    {accent:'#b45309',accentL:'#fbbf24',cycle:'#9f1239',cycleL:'#fda4af',bg:'#0f0a06',bg2:'#1a120a',bg3:'#241a10',bd:'#3a2810',bd2:'#4a3418'},
+};
+
+function applyTheme(t, save_){
+  if(!t) t = db.settings.theme || PRESETS['Dark Teal'];
+  const r = document.documentElement.style;
+  r.setProperty('--teal',   t.accent);
+  r.setProperty('--teal-l', t.accentL);
+  r.setProperty('--teal-d', t.accent+'22');
+  r.setProperty('--teal-m', t.accent+'55');
+  r.setProperty('--rose',   t.cycle);
+  r.setProperty('--rose-l', t.cycleL);
+  r.setProperty('--rose-d', t.cycle+'18');
+  r.setProperty('--rose-m', t.cycle+'40');
+  r.setProperty('--bg',  t.bg);
+  r.setProperty('--bg2', t.bg2);
+  r.setProperty('--bg3', t.bg3);
+  r.setProperty('--bd',  t.bd);
+  r.setProperty('--bd2', t.bd2);
+  if(save_){ db.settings.theme = {...t}; save(); }
+}
+
 function loadSettings(){
   const s=db.settings;
   const cs=document.getElementById('s-cstart');if(cs)cs.value=s.cycleStart||'bleed';
@@ -873,12 +947,50 @@ function loadSettings(){
   const rh=document.getElementById('s-rowh');if(rh)rh.value=s.rowH||28;
   const we=document.getElementById('s-weekend');if(we)we.checked=s.weekend!==false;
   applyRowHeight(s.rowH||28);
+  applyTheme(s.theme||PRESETS['Dark Teal'], false);
+  renderThemeUI();
 }
 function applyRowHeight(v){
   document.documentElement.style.setProperty('--rh',v+'px');
   saveSetting('rowH',parseInt(v));
   if(curPage==='overview')renderGrid();
 }
+function renderThemeUI(){
+  const t = db.settings.theme || PRESETS['Dark Teal'];
+  // Highlight matching preset
+  document.querySelectorAll('.preset-chip').forEach(b => {
+    const p = PRESETS[b.dataset.preset];
+    const match = p && p.accent===t.accent && p.cycle===t.cycle && p.bg===t.bg;
+    b.classList.toggle('active', match);
+  });
+  // Set color picker values
+  const pairs = [
+    ['tc-accent', t.accent], ['tc-accentL', t.accentL],
+    ['tc-cycle',  t.cycle],  ['tc-cycleL',  t.cycleL],
+    ['tc-bg',     t.bg],     ['tc-bg2',     t.bg2], ['tc-bg3', t.bg3],
+  ];
+  pairs.forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if(el && val && val.startsWith('#') && val.length===7) el.value = val;
+  });
+}
+
+function applyPreset(name){
+  const p = PRESETS[name];
+  if(!p) return;
+  applyTheme(p, true);
+  renderThemeUI();
+  showToast(name+' theme applied');
+}
+
+function applyCustomColor(key, val){
+  const t = {...(db.settings.theme || PRESETS['Dark Teal'])};
+  t[key] = val;
+  // Auto-derive dim/mid versions for bg-derived colors
+  applyTheme(t, true);
+  renderThemeUI();
+}
+
 function exportJSON(){
   const b=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='wellbee-'+today()+'.json';a.click();
@@ -944,6 +1056,7 @@ const LOGO_B64="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAAIKCAYAAADVpr
 // INIT
 // ═══════════════════════════════════════════════════════════
 load();
+applyTheme(db.settings.theme||PRESETS['Dark Teal'], false);
 // Embed logo
 (()=>{const img=document.getElementById('logo-img');if(img)img.src=LOGO_B64;})();
 loadSettings();
