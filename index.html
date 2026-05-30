@@ -19,7 +19,7 @@
   --bg:#0a0f0e;--bg2:#111918;--bg3:#182220;
   --bd:#1e2e2b;--bd2:#243330;
   --tx:#e2ede9;--tx2:#94b0aa;--tx3:#5a7a74;
-  --cw:38px;--rh:28px;--lw:120px;--hh:50px;--r:8px;
+  --cw:42px;--rh:28px;--lw:120px;--hh:50px;--r:8px;
   --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -136,7 +136,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--san
 /* MODAL */
 #mb{position:fixed;inset:0;background:#00000088;z-index:100;display:none;align-items:flex-end;justify-content:center}
 #mb.open{display:flex}
-#md{background:var(--bg2);border:1px solid var(--bd);border-radius:14px 14px 0 0;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;padding:18px;animation:su .2s ease}
+#md{background:var(--bg2);border:1px solid var(--bd);border-radius:14px 14px 0 0;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;padding:18px;animation:su .2s ease;position:relative}
 @keyframes su{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
 #md::-webkit-scrollbar{width:3px}#md::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
 .mh{width:32px;height:3px;background:var(--bd2);border-radius:2px;margin:0 auto 14px}
@@ -210,6 +210,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--san
     <button class="nb" onclick="goTo('substances')" data-p="substances"><span class="ni">💊</span>Substances</button>
     <button class="nb rose" onclick="goTo('health')" data-p="health"><span class="ni">🩺</span>Health</button>
     <button class="nb" onclick="goTo('history')" data-p="history"><span class="ni">📋</span>History</button>
+    <button class="nb" onclick="goTo('graphs')" data-p="graphs"><span class="ni">📈</span>Graphs</button>
     <button class="nb" onclick="goTo('settings')" data-p="settings"><span class="ni">⚙️</span>Settings</button>
   </div>
 
@@ -253,6 +254,42 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--san
         <div class="es" id="hist-empty" style="display:none"><div class="ei">📋</div><div class="et">No changes logged yet.</div></div>
       </div>
     </div>
+    <!-- GRAPHS -->
+    <div class="page" id="page-graphs">
+      <div class="sp" style="padding:0;display:flex;flex-direction:column;gap:0">
+        <!-- Controls bar -->
+        <div id="graph-controls" style="padding:10px 12px;background:var(--bg2);border-bottom:1px solid var(--bd);display:flex;flex-wrap:wrap;gap:8px;align-items:center;flex-shrink:0">
+          <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:200px">
+            <span style="font-size:10px;color:var(--tx3);font-family:var(--mono);white-space:nowrap">From</span>
+            <input type="date" id="g-from" style="flex:1;background:var(--bg3);border:1px solid var(--bd2);border-radius:5px;padding:5px 7px;color:var(--tx);font-size:11px;outline:none;font-family:var(--mono)">
+            <span style="font-size:10px;color:var(--tx3);font-family:var(--mono)">to</span>
+            <input type="date" id="g-to" style="flex:1;background:var(--bg3);border:1px solid var(--bd2);border-radius:5px;padding:5px 7px;color:var(--tx);font-size:11px;outline:none;font-family:var(--mono)">
+          </div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <button class="btn bg bxs" onclick="setGRange(7)">7d</button>
+            <button class="btn bg bxs" onclick="setGRange(14)">14d</button>
+            <button class="btn bg bxs" onclick="setGRange(30)">1m</button>
+            <button class="btn bg bxs" onclick="setGRange(90)">3m</button>
+            <button class="btn bg bxs" onclick="setGRange(0)">All</button>
+          </div>
+        </div>
+        <!-- Series selector -->
+        <div id="graph-series-wrap" style="padding:8px 12px;background:var(--bg2);border-bottom:1px solid var(--bd);display:flex;flex-wrap:wrap;gap:5px;flex-shrink:0"></div>
+        <!-- Canvas -->
+        <div style="flex:1;position:relative;min-height:0;overflow:hidden">
+          <canvas id="graph-canvas" style="display:block;width:100%;height:100%"></canvas>
+          <div id="graph-empty" style="display:none;position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--tx3)">
+            <div style="font-size:28px">📈</div>
+            <div style="font-size:12px">No data in this range</div>
+          </div>
+          <!-- Tooltip -->
+          <div id="g-tip" style="display:none;position:absolute;background:var(--bg2);border:1px solid var(--bd2);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--tx);pointer-events:none;z-index:20;max-width:180px;font-family:var(--mono)"></div>
+        </div>
+        <!-- Legend -->
+        <div id="graph-legend" style="padding:8px 12px;background:var(--bg2);border-top:1px solid var(--bd);display:flex;flex-wrap:wrap;gap:8px;flex-shrink:0"></div>
+      </div>
+    </div>
+
     <!-- SETTINGS -->
     <div class="page" id="page-settings">
       <div class="sp">
@@ -273,9 +310,20 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--san
           <div class="ct">📊 Grid</div>
           <div class="fi"><label>Row height</label>
             <select id="s-rowh" onchange="applyRowHeight(this.value)">
-              <option value="24">Compact (24px)</option>
-              <option value="28" selected>Normal (28px)</option>
-              <option value="34">Relaxed (34px)</option>
+              <option value="22">XS (22px)</option>
+              <option value="26">Compact (26px)</option>
+              <option value="30" selected>Normal (30px)</option>
+              <option value="36">Relaxed (36px)</option>
+              <option value="42">Large (42px)</option>
+            </select>
+          </div>
+          <div class="fi"><label>Column width</label>
+            <select id="s-colw" onchange="applyColWidth(this.value)">
+              <option value="30">XS (30px)</option>
+              <option value="36">Compact (36px)</option>
+              <option value="42" selected>Normal (42px)</option>
+              <option value="50">Wide (50px)</option>
+              <option value="60">XL (60px)</option>
             </select>
           </div>
           <div class="fi">
@@ -349,7 +397,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--san
 
 </div>
 
-<div id="mb" onclick="closeModal(event)"><div id="md" onclick="event.stopPropagation()"><div class="mh"></div><div id="mc"></div></div></div>
+<div id="mb" onclick="closeModal(event)"><div id="md" onclick="event.stopPropagation()"><div style="display:flex;align-items:center;margin-bottom:14px"><div class="mh" style="margin:0 auto 0 auto"></div><button onclick="forceCloseModal()" style="position:absolute;right:18px;top:18px;width:28px;height:28px;border-radius:50%;border:1px solid var(--bd2);background:var(--bg3);color:var(--tx2);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">✕</button></div><div id="mc"></div></div></div>
 <div id="pwa-banner">
   <img src="icons/icon-96.png" style="width:32px;height:32px;border-radius:7px;flex-shrink:0">
   <div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--tx)">Install WellBee</div><div style="font-size:10px;color:var(--tx3)">Add to home screen · works offline</div></div>
@@ -365,7 +413,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--san
 const DB = 'wellbee_v1';
 let db = {
   substances:[],healthMarkers:[],logs:{},cycles:[],history:[],
-  settings:{cycleStart:'bleed',cycleLen:28,weekend:true,rowH:28,theme:{accent:'#0d9488',accentL:'#14b8a6',cycle:'#e11d48',cycleL:'#fb7185',bg:'#0a0f0e',bg2:'#111918',bg3:'#182220',bd:'#1e2e2b',bd2:'#243330'}}
+  settings:{cycleStart:'bleed',cycleLen:28,weekend:true,rowH:28,colW:38,theme:{accent:'#0d9488',accentL:'#14b8a6',cycle:'#e11d48',cycleL:'#fb7185',bg:'#0a0f0e',bg2:'#111918',bg3:'#182220',bd:'#1e2e2b',bd2:'#243330'}}
 };
 
 const DEFAULT_SUBS = [
@@ -434,6 +482,7 @@ function goTo(p){
   if(p==='substances')renderSubList();
   if(p==='health')renderHlthList();
   if(p==='history')renderHist();
+  if(p==='graphs')initGraphs();
   if(p==='settings')loadSettings();
 }
 
@@ -717,14 +766,35 @@ function editItemModal(item,kind){
   h+=`<button class="chip${type==='numerical'?' active':''}" data-type="numerical" onclick="selType('numerical')"># Numerical</button>`;
   h+=`<button class="chip${type==='emoji'?' active':''}" data-type="emoji" onclick="selType('emoji')">😊 Emoji</button>`;
   h+=`</div></div>`;
-  // List/emoji options
-  h+=`<div id="ei-lopts" style="${type==='list'||type==='emoji'?'':'display:none'}">`;
-  h+=`<div class="ms">${type==='emoji'?'Emoji choices':'List options'}</div>`;
+  // List options (text inputs)
+  h+=`<div id="ei-lopts" style="${type==='list'?'':'display:none'}">`;
+  h+=`<div class="ms">List options</div>`;
   h+=`<div class="lo" id="ei-lw">`;
-  (opts.length?opts:['Option 1']).forEach(o=>{
+  (type==='list'&&opts.length?opts:type==='list'?['Option 1']:[]).forEach(o=>{
     h+=`<div class="lor"><input value="${o.replace(/"/g,'&quot;')}" placeholder="Option…"><button class="btn bd_ bxs" onclick="this.closest('.lor').remove()">✕</button></div>`;
   });
-  h+=`</div><button class="btn bg bxs" style="margin-top:5px" onclick="addOpt()">+ Add</button></div>`;
+  h+=`</div><button class="btn bg bxs" style="margin-top:5px" onclick="addOpt()">+ Add option</button></div>`;
+  // Emoji picker
+  const EMOJI_POOL = ['😊','😌','😐','😔','😞','😩','🥰','😤','😴','🤢','🤧','💪','🧘','🏃','😵','🥵','🥶','😣','😖','😫','⭐','✅','❌','🔴','🟡','🟢','💙','💜','🩷','🖤','⚡','🔥','💧','🌿','🌸','🍀','☀️','🌙','❄️','🌈'];
+  const selEmojis = type==='emoji'&&opts.length?opts:type==='emoji'?['😊','😌','😐','😔','😞']:[];
+  h+=`<div id="ei-eopts" style="${type==='emoji'?'':'display:none'}">`;
+  h+=`<div class="ms">Emoji options — tap to add/remove from your set</div>`;
+  h+=`<div class="ms" style="margin-top:8px">Your current set</div>`;
+  h+=`<div class="chips" id="ei-emoji-sel" style="margin-bottom:8px">`;
+  selEmojis.forEach(em=>{
+    h+=`<button class="chip active" style="font-size:16px;padding:4px 7px;border-color:var(--teal)" onclick="removeEmojiOpt('${em}')" title="Remove">${em} ✕</button>`;
+  });
+  h+=`</div>`;
+  h+=`<div class="ms">Tap to add</div>`;
+  h+=`<div class="chips" id="ei-emoji-pool">`;
+  EMOJI_POOL.forEach(em=>{
+    const already = selEmojis.includes(em);
+    if(!already) h+=`<button class="chip" style="font-size:16px;padding:4px 7px" onclick="addEmojiOpt('${em}')">${em}</button>`;
+  });
+  h+=`</div>`;
+  h+=`<div class="ms" style="margin-top:8px">Or type custom</div>`;
+  h+=`<div style="display:flex;gap:6px;align-items:center"><input id="ei-emoji-custom" placeholder="Paste emoji…" style="flex:1;background:var(--bg3);border:1px solid var(--bd2);border-radius:5px;padding:6px 8px;color:var(--tx);font-size:16px;outline:none"><button class="btn bg bxs" onclick="addCustomEmoji()">Add</button></div>`;
+  h+=`</div>`;
   // Numerical options
   h+=`<div id="ei-nopts" style="${type==='numerical'?'':'display:none'}">`;
   h+=`<div class="ms">Numerical</div>`;
@@ -770,8 +840,11 @@ function selColor(c){
 function selType(t){
   _ei.type=t;
   document.querySelectorAll('#ei-types .chip').forEach(b=>b.classList.toggle('active',b.dataset.type===t));
-  const lo=document.getElementById('ei-lopts');const no=document.getElementById('ei-nopts');
-  if(lo)lo.style.display=(t==='list'||t==='emoji')?'':'none';
+  const lo=document.getElementById('ei-lopts');
+  const eo=document.getElementById('ei-eopts');
+  const no=document.getElementById('ei-nopts');
+  if(lo)lo.style.display=t==='list'?'':'none';
+  if(eo)eo.style.display=t==='emoji'?'':'none';
   if(no)no.style.display=t==='numerical'?'':'none';
 }
 function selScale(m){
@@ -791,7 +864,49 @@ function addOpt(){
   r.innerHTML=`<input value="New option" placeholder="Option…"><button class="btn bd_ bxs" onclick="this.closest('.lor').remove()">✕</button>`;
   w.appendChild(r);
 }
-function getOpts(){return[...document.querySelectorAll('#ei-lw input')].map(i=>i.value.trim()).filter(Boolean);}
+function getEmojiSel(){
+  // Read currently selected emojis from the sel chips
+  return [...document.querySelectorAll('#ei-emoji-sel .chip')].map(b=>b.textContent.replace(' ✕','').trim()).filter(Boolean);
+}
+function addEmojiOpt(em){
+  const sel=document.getElementById('ei-emoji-sel');
+  const pool=document.getElementById('ei-emoji-pool');
+  if(!sel||!pool)return;
+  // Check not already in sel
+  const existing=getEmojiSel();
+  if(existing.includes(em))return;
+  // Add to sel
+  const btn=document.createElement('button');
+  btn.className='chip active';
+  btn.style.cssText='font-size:16px;padding:4px 7px;border-color:var(--teal)';
+  btn.title='Remove';
+  btn.onclick=()=>removeEmojiOpt(em);
+  btn.textContent=em+' ✕';
+  sel.appendChild(btn);
+  // Remove from pool
+  [...pool.querySelectorAll('.chip')].forEach(b=>{if(b.textContent.trim()===em)b.remove();});
+}
+function removeEmojiOpt(em){
+  const sel=document.getElementById('ei-emoji-sel');
+  const pool=document.getElementById('ei-emoji-pool');
+  if(!sel||!pool)return;
+  // Remove from sel
+  [...sel.querySelectorAll('.chip')].forEach(b=>{if(b.textContent.replace(' ✕','').trim()===em)b.remove();});
+  // Add back to pool
+  const btn=document.createElement('button');
+  btn.className='chip';
+  btn.style.cssText='font-size:16px;padding:4px 7px';
+  btn.onclick=()=>addEmojiOpt(em);
+  btn.textContent=em;
+  pool.appendChild(btn);
+}
+function addCustomEmoji(){
+  const inp=document.getElementById('ei-emoji-custom');
+  if(!inp||!inp.value.trim())return;
+  addEmojiOpt(inp.value.trim());
+  inp.value='';
+}
+function getOpts(){const t=getType();if(t==='emoji')return getEmojiSel();return[...document.querySelectorAll('#ei-lw input')].map(i=>i.value.trim()).filter(Boolean);}
 function getType(){const a=document.querySelector('#ei-types .chip.active');return a?a.dataset.type:(_ei.type||'tick');}
 function getScaleMode(){const a=document.getElementById('sc-fix');return a&&a.classList.contains('active')?'fixed':'auto';}
 
@@ -947,15 +1062,22 @@ function loadSettings(){
   const s=db.settings;
   const cs=document.getElementById('s-cstart');if(cs)cs.value=s.cycleStart||'bleed';
   const cl=document.getElementById('s-clen');if(cl)cl.value=s.cycleLen||28;
-  const rh=document.getElementById('s-rowh');if(rh)rh.value=s.rowH||28;
+  const rh=document.getElementById('s-rowh');if(rh)rh.value=s.rowH||30;
+  const cw=document.getElementById('s-colw');if(cw)cw.value=s.colW||42;
   const we=document.getElementById('s-weekend');if(we)we.checked=s.weekend!==false;
   applyRowHeight(s.rowH||28);
+  applyColWidth(s.colW||38);
   applyTheme(s.theme||PRESETS['Dark Teal'], false);
   renderThemeUI();
 }
 function applyRowHeight(v){
   document.documentElement.style.setProperty('--rh',v+'px');
   saveSetting('rowH',parseInt(v));
+  if(curPage==='overview')renderGrid();
+}
+function applyColWidth(v){
+  document.documentElement.style.setProperty('--cw',v+'px');
+  saveSetting('colW',parseInt(v));
   if(curPage==='overview')renderGrid();
 }
 function renderThemeUI(){
@@ -992,6 +1114,379 @@ function applyCustomColor(key, val){
   // Auto-derive dim/mid versions for bg-derived colors
   applyTheme(t, true);
   renderThemeUI();
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// GRAPHS
+// ═══════════════════════════════════════════════════════════
+let gState = {
+  selectedIds: new Set(),
+  from: null,
+  to: null,
+  animFrame: null,
+};
+
+function initGraphs() {
+  // Default range: last 30 days
+  const td = today();
+  const d30 = dStr(new Date(Date.now() - 30*864e5));
+  const fromEl = document.getElementById('g-from');
+  const toEl   = document.getElementById('g-to');
+  if (!fromEl.value) fromEl.value = gState.from || d30;
+  if (!toEl.value)   toEl.value   = gState.to   || td;
+  fromEl.onchange = () => { gState.from = fromEl.value; drawGraph(); };
+  toEl.onchange   = () => { gState.to   = toEl.value;   drawGraph(); };
+  gState.from = fromEl.value;
+  gState.to   = toEl.value;
+
+  buildSeriesSelector();
+  setupCanvas();
+  drawGraph();
+}
+
+function setGRange(days) {
+  const td = today();
+  const fromEl = document.getElementById('g-from');
+  const toEl   = document.getElementById('g-to');
+  toEl.value = td;
+  if (days === 0) {
+    // All time: find earliest log
+    const allDates = Object.keys(db.logs).sort();
+    fromEl.value = allDates.length ? allDates[0] : dStr(new Date(Date.now() - 90*864e5));
+  } else {
+    fromEl.value = dStr(new Date(Date.now() - days*864e5));
+  }
+  gState.from = fromEl.value;
+  gState.to   = toEl.value;
+  drawGraph();
+}
+
+function buildSeriesSelector() {
+  const wrap = document.getElementById('graph-series-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+
+  // All trackable items
+  const allItems = [
+    ...db.substances,
+    ...db.healthMarkers.filter(m => m.type === 'numerical' || m.type === 'list' || m.type === 'tick'),
+  ];
+
+  // Auto-select first 3 if nothing selected
+  if (gState.selectedIds.size === 0) {
+    allItems.slice(0, 3).forEach(it => gState.selectedIds.add(it.id));
+  }
+
+  allItems.forEach(item => {
+    const btn = document.createElement('button');
+    const cc = item.customColor || '#14b8a6';
+    const active = gState.selectedIds.has(item.id);
+    btn.className = 'btn bxs';
+    btn.style.cssText = `border:1.5px solid ${cc};background:${active ? cc+'33' : 'transparent'};color:${active ? cc : 'var(--tx3)'};border-radius:20px;transition:.15s`;
+    btn.textContent = (item.icon || '') + ' ' + item.name;
+    btn.onclick = () => {
+      if (gState.selectedIds.has(item.id)) {
+        gState.selectedIds.delete(item.id);
+      } else {
+        gState.selectedIds.add(item.id);
+      }
+      buildSeriesSelector();
+      drawGraph();
+    };
+    wrap.appendChild(btn);
+  });
+}
+
+function setupCanvas() {
+  const canvas = document.getElementById('graph-canvas');
+  if (!canvas) return;
+  // Touch/mouse tooltip
+  canvas.onmousemove = (e) => showGraphTip(e, canvas);
+  canvas.ontouchmove = (e) => { e.preventDefault(); showGraphTip(e.touches[0], canvas); };
+  canvas.onmouseleave = () => { const t = document.getElementById('g-tip'); if(t) t.style.display='none'; };
+  canvas.ontouchend   = () => { const t = document.getElementById('g-tip'); if(t) t.style.display='none'; };
+  resizeCanvas();
+  window.addEventListener('resize', () => { resizeCanvas(); drawGraph(); });
+}
+
+function resizeCanvas() {
+  const canvas = document.getElementById('graph-canvas');
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width  = rect.width  * dpr;
+  canvas.height = rect.height * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+}
+
+// Build days array between two date strings
+function daysBetween(from, to) {
+  const days = [];
+  const d = new Date(from + 'T00:00:00');
+  const end = new Date(to + 'T00:00:00');
+  while (d <= end) { days.push(dStr(d)); d.setDate(d.getDate()+1); }
+  return days;
+}
+
+// Normalize a value for an item: returns 0..1
+function normalizeVal(item, val) {
+  if (val === null || val === undefined || val === '') return null;
+
+  if (item.type === 'numerical') {
+    const num = parseFloat(val);
+    if (isNaN(num)) return null;
+    let mn, mx;
+    if (item.scaleMode === 'fixed') {
+      mn = parseFloat(item.scaleMin || 0);
+      mx = parseFloat(item.scaleMax || 10);
+    } else {
+      mn = getMin(item.id);
+      mx = getMax(item.id);
+    }
+    return mx > mn ? Math.max(0, Math.min(1, (num - mn) / (mx - mn))) : 0.5;
+  }
+
+  if (item.type === 'tick') {
+    return val ? 1 : 0;
+  }
+
+  if (item.type === 'list') {
+    const opts = item.options || [];
+    const idx = opts.indexOf(val);
+    if (idx < 0) return null;
+    return opts.length > 1 ? idx / (opts.length - 1) : 0.5;
+  }
+
+  return null;
+}
+
+// Label for a value
+function valLabel(item, val) {
+  if (val === null || val === undefined || val === '') return '—';
+  if (item.type === 'numerical') return val + (item.unit ? ' ' + item.unit : '');
+  if (item.type === 'tick') return val ? 'Yes' : 'No';
+  return String(val);
+}
+
+function drawGraph() {
+  const canvas = document.getElementById('graph-canvas');
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.width / dpr;
+  const H = canvas.height / dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+
+  const from = gState.from || dStr(new Date(Date.now() - 30*864e5));
+  const to   = gState.to   || today();
+  const days = daysBetween(from, to);
+
+  // Get selected items
+  const allItems = [...db.substances, ...db.healthMarkers];
+  const series = allItems.filter(it => gState.selectedIds.has(it.id));
+
+  // Padding
+  const PAD = { top: 16, right: 16, bottom: 36, left: 44 };
+  const gW = W - PAD.left - PAD.right;
+  const gH = H - PAD.top  - PAD.bottom;
+
+  if (days.length === 0 || series.length === 0 || gW < 10 || gH < 10) {
+    updateEmptyState(true); updateLegend([]); return;
+  }
+
+  // Check if any data exists
+  let hasData = false;
+  series.forEach(item => {
+    days.forEach(ds => { if (getLog(ds, item.id) !== null) hasData = true; });
+  });
+  updateEmptyState(!hasData);
+  if (!hasData) { updateLegend(series); return; }
+
+  // ── Grid lines ──
+  const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--bd').trim() || '#1e2e2b';
+  const tx3Color  = getComputedStyle(document.documentElement).getPropertyValue('--tx3').trim() || '#5a7a74';
+  const tx2Color  = getComputedStyle(document.documentElement).getPropertyValue('--tx2').trim() || '#94b0aa';
+
+  ctx.strokeStyle = gridColor;
+  ctx.lineWidth = 1;
+  // Horizontal grid lines (0%, 25%, 50%, 75%, 100%)
+  [0, 0.25, 0.5, 0.75, 1].forEach(pct => {
+    const y = PAD.top + gH * (1 - pct);
+    ctx.beginPath();
+    ctx.moveTo(PAD.left, y);
+    ctx.lineTo(PAD.left + gW, y);
+    ctx.stroke();
+    // Y axis label
+    ctx.fillStyle = tx3Color;
+    ctx.font = `9px monospace`;
+    ctx.textAlign = 'right';
+    ctx.fillText(Math.round(pct * 100) + '%', PAD.left - 4, y + 3);
+  });
+
+  // ── X axis labels ──
+  ctx.fillStyle = tx3Color;
+  ctx.font = '9px monospace';
+  ctx.textAlign = 'center';
+  const maxLabels = Math.min(days.length, Math.floor(gW / 36));
+  const step = Math.max(1, Math.ceil(days.length / maxLabels));
+  days.forEach((ds, i) => {
+    if (i % step !== 0 && i !== days.length - 1) return;
+    const x = PAD.left + (i / Math.max(days.length - 1, 1)) * gW;
+    const d = new Date(ds + 'T00:00:00');
+    const lbl = days.length <= 14
+      ? d.toLocaleDateString('en-GB', {day:'numeric',month:'short'})
+      : d.toLocaleDateString('en-GB', {day:'numeric',month:'short'});
+    ctx.fillText(lbl, x, H - PAD.bottom + 14);
+    // Tick
+    ctx.strokeStyle = gridColor;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x, PAD.top + gH);
+    ctx.lineTo(x, PAD.top + gH + 4);
+    ctx.stroke();
+  });
+
+  // ── Cycle phase bands ──
+  if (db.cycles.length) {
+    ctx.globalAlpha = 0.07;
+    const roseColor = getComputedStyle(document.documentElement).getPropertyValue('--rose-l').trim() || '#fb7185';
+    db.cycles.forEach(cyc => {
+      const cycStart = cyc.startDate;
+      if (cycStart > to || cycStart < from) return;
+      const xi = days.indexOf(cycStart);
+      if (xi < 0) return;
+      const x = PAD.left + (xi / Math.max(days.length - 1, 1)) * gW;
+      ctx.fillStyle = roseColor;
+      ctx.fillRect(x - 2, PAD.top, 6, gH);
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  // Store points for tooltip
+  gState._points = [];
+
+  // ── Draw each series ──
+  series.forEach((item, si) => {
+    const cc = item.customColor || '#14b8a6';
+    // Collect normalized values
+    const pts = days.map((ds, i) => {
+      const raw = getLog(ds, item.id);
+      const norm = normalizeVal(item, raw);
+      if (norm === null) return null;
+      const x = PAD.left + (i / Math.max(days.length - 1, 1)) * gW;
+      const y = PAD.top + gH * (1 - norm);
+      return { x, y, ds, raw, norm, item };
+    });
+
+    // Save for tooltip
+    pts.forEach(p => { if (p) gState._points.push(p); });
+
+    // Draw filled area under line
+    const validPts = pts.filter(Boolean);
+    if (validPts.length === 0) return;
+
+    ctx.globalAlpha = 0.12;
+    ctx.fillStyle = cc;
+    ctx.beginPath();
+    let started = false;
+    pts.forEach((p, i) => {
+      if (!p) { started = false; return; }
+      if (!started) {
+        ctx.moveTo(p.x, PAD.top + gH);
+        ctx.lineTo(p.x, p.y);
+        started = true;
+      } else {
+        ctx.lineTo(p.x, p.y);
+      }
+    });
+    // Close path downward
+    const lastValid = [...pts].reverse().find(Boolean);
+    if (lastValid) {
+      ctx.lineTo(lastValid.x, PAD.top + gH);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // Draw line (skip gaps)
+    ctx.strokeStyle = cc;
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    started = false;
+    pts.forEach(p => {
+      if (!p) { started = false; return; }
+      if (!started) { ctx.moveTo(p.x, p.y); started = true; }
+      else ctx.lineTo(p.x, p.y);
+    });
+    ctx.stroke();
+
+    // Draw dots on data points
+    validPts.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, days.length > 60 ? 2 : 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = cc;
+      ctx.fill();
+      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg2').trim() || '#111918';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    });
+  });
+
+  updateLegend(series);
+}
+
+function updateEmptyState(empty) {
+  const el = document.getElementById('graph-empty');
+  if (el) el.style.display = empty ? 'flex' : 'none';
+}
+
+function updateLegend(series) {
+  const leg = document.getElementById('graph-legend');
+  if (!leg) return;
+  leg.innerHTML = '';
+  if (!series.length) return;
+  series.forEach(item => {
+    const cc = item.customColor || '#14b8a6';
+    const el = document.createElement('div');
+    el.style.cssText = 'display:flex;align-items:center;gap:5px;font-size:10px;font-family:var(--mono);color:var(--tx2)';
+    el.innerHTML = `<div style="width:20px;height:3px;background:${cc};border-radius:2px;flex-shrink:0"></div>${item.icon||''} ${item.name}`;
+    leg.appendChild(el);
+  });
+}
+
+function showGraphTip(e, canvas) {
+  const tip = document.getElementById('g-tip');
+  if (!tip || !gState._points) return;
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  // Find closest point
+  let best = null, bestDist = 999;
+  gState._points.forEach(p => {
+    const d = Math.sqrt((p.x-mx)**2 + (p.y-my)**2);
+    if (d < bestDist) { bestDist = d; best = p; }
+  });
+
+  if (!best || bestDist > 40) { tip.style.display = 'none'; return; }
+
+  const fmtDate = new Date(best.ds+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'2-digit'});
+  tip.innerHTML = `<div style="color:var(--tx3);margin-bottom:3px">${fmtDate}</div>
+    <div style="color:${best.item.customColor||'var(--teal-l)'};font-weight:600">${best.item.icon||''} ${best.item.name}</div>
+    <div style="color:var(--tx)">${valLabel(best.item, best.raw)}</div>`;
+
+  // Position tooltip - keep in bounds
+  let tx = mx + 12;
+  let ty = my - 10;
+  if (tx + 190 > rect.width) tx = mx - 195;
+  if (ty < 0) ty = 0;
+  tip.style.left = tx + 'px';
+  tip.style.top  = ty + 'px';
+  tip.style.display = 'block';
 }
 
 function exportJSON(){
@@ -1042,6 +1537,7 @@ function dismissAutoCopy(){document.getElementById('acp').classList.remove('show
 // ═══════════════════════════════════════════════════════════
 function openModal(h){document.getElementById('mc').innerHTML=h;document.getElementById('mb').classList.add('open');}
 function closeModal(e){if(e&&e.target!==document.getElementById('mb'))return;document.getElementById('mb').classList.remove('open');}
+function forceCloseModal(){document.getElementById('mb').classList.remove('open');}
 let _tt;
 function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),1800);}
 
