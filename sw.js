@@ -1,8 +1,5 @@
-// WellBee Service Worker — v1.0
-// Caches the full app shell for offline use.
-// All data is stored in localStorage on the device.
-
-const CACHE_NAME = 'wellbee-v1';
+// WellBee Service Worker — v3
+const CACHE = 'wellbee-v3';
 
 const PRECACHE = [
   './',
@@ -12,65 +9,54 @@ const PRECACHE = [
   './icons/icon-512.png',
 ];
 
-const CDN_HOSTS = [
-  'fonts.googleapis.com',
-  'fonts.gstatic.com',
-];
-
-// ── Install: pre-cache app shell ─────────────────────────────
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(PRECACHE))
+// Install: cache app shell
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE)
+      .then(c => c.addAll(PRECACHE))
       .then(() => self.skipWaiting())
   );
 });
 
-// ── Activate: remove old caches ──────────────────────────────
-self.addEventListener('activate', event => {
-  event.waitUntil(
+// Activate: delete old caches immediately
+self.addEventListener('activate', e => {
+  e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(
-        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-      ))
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
 
-// ── Fetch: cache-first for app, network-first for CDN fonts ──
-self.addEventListener('fetch', event => {
-  const url = new URL(event.request.url);
+// Fetch: cache-first for same-origin, network-first for fonts
+self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
+  const url = new URL(e.request.url);
 
-  if (event.request.method !== 'GET') return;
-  if (!event.request.url.startsWith('http')) return;
-
-  // Fonts: network-first, fall back to cache
-  if (CDN_HOSTS.includes(url.hostname)) {
-    event.respondWith(
-      fetch(event.request)
-        .then(res => {
-          const clone = res.clone();
-          caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
-          return res;
-        })
-        .catch(() => caches.match(event.request))
+  // Google Fonts - network first, cache fallback
+  if (url.hostname.includes('fonts.g')) {
+    e.respondWith(
+      fetch(e.request).then(res => {
+        const c = res.clone();
+        caches.open(CACHE).then(cache => cache.put(e.request, c));
+        return res;
+      }).catch(() => caches.match(e.request))
     );
     return;
   }
 
-  // App shell: cache-first
+  // Same-origin app files - cache first, network fallback
   if (url.origin === self.location.origin) {
-    event.respondWith(
-      caches.match(event.request)
-        .then(cached => {
-          if (cached) return cached;
-          return fetch(event.request).then(res => {
-            const clone = res.clone();
-            caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
-            return res;
-          });
-        })
-        .catch(() => caches.match('./index.html'))
+    e.respondWith(
+      caches.match(e.request).then(cached => {
+        if (cached) return cached;
+        return fetch(e.request).then(res => {
+          if (res.ok) {
+            const c = res.clone();
+            caches.open(CACHE).then(cache => cache.put(e.request, c));
+          }
+          return res;
+        });
+      }).catch(() => caches.match('./index.html'))
     );
   }
 });
